@@ -1937,6 +1937,716 @@
     </adversaire>
 </famille>
 
+<famille nom="Moria - Adversaires uniques">
+        <creature>
+            <nom>Rikba le Putois</nom>
+            <attributs>
+                <niveau>4</niveau>
+                <endurance>16</endurance>
+                <puissance>1</puissance>
+                <haine>4</haine>
+                <parade>+1</parade>
+                <armure>2</armure>
+            </attributs>
+            <Particularités>Infect, Secret</Particularités>
+            <competences_combat>
+                <arme>
+                    <nom_arme>Griffes</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>4/14</degats_arme>
+                    <special_arme>Perforation</special_arme>
+                </arme>
+            </competences_combat>
+            <capacites>
+                <capacite>
+                    <Titre_Capacite>Aversion pour le soleil</Titre_Capacite>
+                    <Detail_Capacite>Rikba perd 1 point de Haine au début de chaque round qu'il passe exposé à la lumière directe du soleil.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Cri d'alerte</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour augmenter le niveau de Vigilance de l'Œil de 1 ; si ce dernier égale ou surpasse le seuil de Chasse, introduisez immédiatement un Épisode révélateur.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Grand bond</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour attaquer un Héros quelle que soit sa position de combat, y compris en position arrière.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Habitant des ténèbres</Titre_Capacite>
+                    <Detail_Capacite>Toutes les attaques effectuées dans l'obscurité sont favorisées.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Vitesse du serpent</Titre_Capacite>
+                    <Detail_Capacite>Quand Rikba est ciblé par une attaque, dépensez 1 point de Haine pour rendre cette attaque défavorisée.</Detail_Capacite>
+                </capacite>
+            </capacites>
+        </creature>
 
+        <creature>
+            <nom>Vigne-de-sang</nom>
+            <attributs>
+                <niveau>6</niveau>
+                <endurance>50</endurance>
+                <puissance>2</puissance>
+                <determination>6</determination>
+                <parade>-</parade>
+                <armure>2</armure>
+            </attributs>
+            <Particularités>Affamée, Stupide</Particularités>
+            <competences_combat>
+                <arme>
+                    <nom_arme>Lianes cinglantes</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>6/14</degats_arme>
+                    <special_arme>absorption de vie*</special_arme>
+                    <note_arme>* La créature se saisit de la cible (identique au dégât spécial Étreinte), puis absorbe son sang à la fin de chaque round où la cible est encore Étreinte, lui infligeant un Coup perforant et une perte d'Endurance légère due au poison (ou sévère si la cible est Blessée).</note_arme>
+                </arme>
+            </competences_combat>
+            <capacites>
+                <capacite>
+                    <Titre_Capacite>Cuir robuste</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Détermination pour gagner (2d) à un jet de Protection.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Lâcheté</Titre_Capacite>
+                    <Detail_Capacite>La Vigne-de-sang est immobile, mais si sa Détermination est réduite à 0, elle se rétracte dans les fissures de la pierre et cesse d'attaquer.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Peur du feu</Titre_Capacite>
+                    <Detail_Capacite>Au début de chaque round où la Vigne-de-sang est engagée en combat rapproché contre un adversaire portant une torche ou tout autre objet enflammé, elle perd 1 point de Détermination.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Résistance abominable</Titre_Capacite>
+                    <Detail_Capacite>Quand une attaque inflige à la Vigne-de-sang des dégâts censés faire tomber son Endurance à zéro, elle subit un Coup perforant à la place. Si elle est toujours en vie, ses points d'Endurance sont restaurés à la moitié de son maximum. Cette capacité redoutable est inefficace contre une perte d'Endurance due au feu.</Detail_Capacite>
+                </capacite>
+            </capacites>
+        </creature>
 
+        <creature>
+            <nom>Hagrot le Sournois</nom>
+            <attributs>
+                <niveau>6</niveau>
+                <endurance>24</endurance>
+                <puissance>1</puissance>
+                <haine>6</haine>
+                <parade>+3</parade>
+                <armure>3</armure>
+            </attributs>
+            <Particularités>Ambitieux, Sournois</Particularités>
+            <competences_combat>
+                <arme>
+                    <nom_arme>Cimeterre</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>3/16</degats_arme>
+                </arme>
+                <arme>
+                    <nom_arme>Arc de corne</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>3/14</degats_arme>
+                    <special_arme>Perforation</special_arme>
+                </arme>
+            </competences_combat>
+            <capacites>
+                <capacite>
+                    <Titre_Capacite>Cri de triomphe</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour restaurer 1 point de Haine à tous les autres Orques participant au combat.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Habitant des ténèbres</Titre_Capacite>
+                    <Detail_Capacite>Toutes les attaques effectuées dans l'obscurité sont favorisées.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Poison orque</Titre_Capacite>
+                    <Detail_Capacite>Si une attaque provoque une Blessure, la cible est également empoisonnée.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Vitesse du serpent</Titre_Capacite>
+                    <Detail_Capacite>Quand Hagrot est ciblé par une attaque, dépensez 1 point de Haine pour rendre cette attaque défavorisée.</Detail_Capacite>
+                </capacite>
+            </capacites>
+        </creature>
+
+        <creature>
+            <nom>Angolath</nom>
+            <attributs>
+                <niveau>11</niveau>
+                <endurance>130</endurance>
+                <puissance>3</puissance>
+                <haine>11</haine>
+                <parade>-</parade>
+                <armure>3</armure>
+            </attributs>
+            <Particularités>Rapide, Sournoise</Particularités>
+            <competences_combat>
+                <arme>
+                    <nom_arme>Morsure</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>6/18</degats_arme>
+                    <special_arme>Perforation</special_arme>
+                </arme>
+            </competences_combat>
+            <capacites>
+                <capacite>
+                    <Titre_Capacite>Cuir robuste</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour gagner (2d) à un jet de Protection.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Poison</Titre_Capacite>
+                    <Detail_Capacite>Si une attaque provoque une Blessure, la cible est également empoisonnée (inflige une perte d'Endurance fatale).</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Poussière infâme</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour infliger une perte d'Endurance légère due au Poison à tous les Héros en position engagé en combat rapproché.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Résistance abominable</Titre_Capacite>
+                    <Detail_Capacite>Angolath n'est pas affectée par les attaques à mains nues. De plus, quand une attaque inflige à Angolath des dégâts censés faire tomber son Endurance à zéro, elle subit un Coup perforant à la place. Si elle est toujours en vie, ses points d'Endurance sont restaurés à la moitié de son maximum.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Vitesse du serpent</Titre_Capacite>
+                    <Detail_Capacite>Quand Angolath est ciblée par une attaque, dépensez 1 point de Haine pour rendre cette attaque défavorisée.</Detail_Capacite>
+                </capacite>
+            </capacites>
+        </creature>
+
+        <creature>
+            <nom>Yagul</nom>
+            <attributs>
+                <niveau>6</niveau>
+                <endurance>30</endurance>
+                <puissance>2</puissance>
+                <haine>6</haine>
+                <parade>+3</parade>
+                <armure>3</armure>
+            </attributs>
+            <Particularités>Cruel, Sournois</Particularités>
+            <competences_combat>
+                <arme>
+                    <nom_arme>Lance à pointe large</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>5/16</degats_arme>
+                    <special_arme>Perforation</special_arme>
+                </arme>
+                <arme>
+                    <nom_arme>Cimeterre</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>3/16</degats_arme>
+                </arme>
+            </competences_combat>
+            <capacites>
+                <capacite>
+                    <Titre_Capacite>Cri de triomphe</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour restaurer 1 point de Haine à tous les autres Orques participant au combat.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Grand bond</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour attaquer un Héros quelle que soit sa position de combat, y compris en position arrière.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Habitant des ténèbres</Titre_Capacite>
+                    <Detail_Capacite>Toutes les attaques effectuées dans l'obscurité sont favorisées.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Vitesse du serpent</Titre_Capacite>
+                    <Detail_Capacite>Quand Yagul est ciblé par une attaque, dépensez 1 point de Haine pour rendre cette attaque défavorisée.</Detail_Capacite>
+                </capacite>
+            </capacites>
+        </creature>
+
+        <creature>
+            <nom>Uftak</nom>
+            <attributs>
+                <niveau>8</niveau>
+                <endurance>50</endurance>
+                <puissance>2</puissance>
+                <haine>8</haine>
+                <parade>+2</parade>
+                <armure>3</armure>
+            </attributs>
+            <Particularités>Coriace, Massif</Particularités>
+            <competences_combat>
+                <arme>
+                    <nom_arme>Hache orque</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>5/18</degats_arme>
+                    <special_arme>Brise bouclier</special_arme>
+                </arme>
+                <arme>
+                    <nom_arme>Lance à pointe large</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>5/16</degats_arme>
+                    <special_arme>Perforation</special_arme>
+                </arme>
+            </competences_combat>
+            <capacites>
+                <capacite>
+                    <Titre_Capacite>Force effroyable</Titre_Capacite>
+                    <Detail_Capacite>En combat rapproché, si une attaque d'Uftak inflige un Coup perforant, dépensez 1 point de Haine pour rendre le jet de Protection de la cible défavorisé.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Lent d'esprit</Titre_Capacite>
+                    <Detail_Capacite>Un Héros en position de combat avancée peut tenter une manœuvre de combat spéciale contre Uftak : le joueur effectue un test d'ÉNIGMES en tant qu'action principale du round. Si le test est réussi, Uftak perd 1 point de Haine, plus 1 point pour chaque symbole Réussite obtenu.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Résistance abominable</Titre_Capacite>
+                    <Detail_Capacite>Quand une attaque inflige à Uftak des dégâts censés faire tomber son Endurance à zéro, il subit un Coup perforant à la place. S'il est toujours en vie, ses points d'Endurance sont restaurés à la moitié de son maximum.</Detail_Capacite>
+                </capacite>
+            </capacites>
+        </creature>
+
+        <creature>
+            <nom>Malech le Borgne</nom>
+            <attributs>
+                <niveau>7</niveau>
+                <endurance>40</endurance>
+                <puissance>2</puissance>
+                <haine>7</haine>
+                <parade>+4</parade>
+                <armure>4</armure>
+            </attributs>
+            <Particularités>Affreux, Malin</Particularités>
+            <competences_combat>
+                <arme>
+                    <nom_arme>Lance à pointe large</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>5/16</degats_arme>
+                    <special_arme>Perforation</special_arme>
+                </arme>
+            </competences_combat>
+            <capacites>
+                <capacite>
+                    <Titre_Capacite>Cri de triomphe</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour restaurer 1 point de Haine à tous les autres Orques participant au combat.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Habitant des ténèbres</Titre_Capacite>
+                    <Detail_Capacite>Toutes les attaques effectuées dans l'obscurité sont favorisées.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Lâcheté</Titre_Capacite>
+                    <Detail_Capacite>S'il est affecté par la manœuvre de combat Intimider l'adversaire, Malech perd également 1 point de Haine.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Résistance abominable</Titre_Capacite>
+                    <Detail_Capacite>Quand une attaque inflige à Malech des dégâts censés faire tomber son Endurance à zéro, il subit un Coup perforant à la place. S'il est toujours en vie, ses points d'Endurance sont restaurés à la moitié de son maximum.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Vitesse du serpent</Titre_Capacite>
+                    <Detail_Capacite>Quand Malech est ciblé par une attaque, dépensez 1 point de Haine pour rendre cette attaque défavorisée.</Detail_Capacite>
+                </capacite>
+            </capacites>
+        </creature>
+
+        <creature>
+            <nom>Har, Aspirant Seigneur de la Moria</nom>
+            <attributs>
+                <niveau>6</niveau>
+                <endurance>40</endurance>
+                <puissance>2</puissance>
+                <haine>6</haine>
+                <parade>+2</parade>
+                <armure>4</armure>
+            </attributs>
+            <Particularités>Astucieux, Corrompu</Particularités>
+            <competences_combat>
+                <arme>
+                    <nom_arme>Hache de bataille</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>6/18</degats_arme>
+                    <special_arme>Brise bouclier</special_arme>
+                </arme>
+            </competences_combat>
+            <capacites>
+                <capacite>
+                    <Titre_Capacite>Anneau moindre</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour faire échouer un jet de Compétence réussi par un Héros à proximité (n'affecte pas les Réussites magiques) : le test aboutit à un échec à la place.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Armure épaisse</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour gagner (2d) à un jet de Protection.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Aversion (Elfes et Dúnedain)</Titre_Capacite>
+                    <Detail_Capacite>Quand la cible de Har est l'objet de son Aversion, toutes ses attaques sont favorisées.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Bravoure</Titre_Capacite>
+                    <Detail_Capacite>La Puissance de Har est considérée comme étant de 1 point supplémentaire quand il résiste à la manœuvre de combat Intimider l'adversaire.</Detail_Capacite>
+                </capacite>
+            </capacites>
+        </creature>
+
+        <creature>
+            <nom>Esprit de l'Ombre</nom>
+            <attributs>
+                <niveau>4</niveau>
+                <endurance>16</endurance>
+                <puissance>1</puissance>
+                <haine>4</haine>
+                <parade>-</parade>
+                <armure>2</armure>
+            </attributs>
+            <Particularités>Impétueux, Rapide</Particularités>
+            <competences_combat>
+                <arme>
+                    <nom_arme>Toucher glacial</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>4/12</degats_arme>
+                    <special_arme>absorption de vie*</special_arme>
+                    <note_arme>* La créature se saisit de la cible (identique au dégât spécial Étreinte), puis absorbe sa force vitale à la fin de chaque round où la cible est encore Étreinte, lui infligeant un Coup perforant et une perte d'Endurance légère due au poison (ou sévère si la cible est Blessée).</note_arme>
+                </arme>
+            </competences_combat>
+            <capacites>
+                <capacite>
+                    <Titre_Capacite>Esprit</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour éliminer une Blessure. Quand une attaque inflige à la créature des dégâts censés faire tomber son Endurance à zéro, elle subit un Coup perforant à la place. Si elle est toujours en vie, ses points d'Endurance sont restaurés au maximum. Cette capacité est inefficace contre un Héros maniant une arme magique.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Impassible</Titre_Capacite>
+                    <Detail_Capacite>La créature n'est pas affectée par la manœuvre de combat Intimider l'adversaire, sauf en cas d'une Réussite magique.</Detail_Capacite>
+                </capacite>
+            </capacites>
+        </creature>
+
+        <creature>
+            <nom>Naglur, Épée de Sauron</nom>
+            <attributs>
+                <niveau>7</niveau>
+                <endurance>40</endurance>
+                <puissance>2</puissance>
+                <haine>7</haine>
+                <parade>+4</parade>
+                <armure>4</armure>
+            </attributs>
+            <Particularités>Arrogant, Impétueux</Particularités>
+            <competences_combat>
+                <arme>
+                    <nom_arme>Épée large</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>4/16</degats_arme>
+                    <special_arme>Perforation</special_arme>
+                </arme>
+            </competences_combat>
+            <capacites>
+                <capacite>
+                    <Titre_Capacite>Armure épaisse</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour gagner (2d) à un jet de Protection.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Cri de triomphe</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour restaurer 1 point de Haine à tous les autres Orques participant au combat.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Force effroyable</Titre_Capacite>
+                    <Detail_Capacite>En combat rapproché, si une attaque de Naglur inflige un Coup perforant, dépensez 1 point de Haine pour rendre le jet de Protection de la cible défavorisé.</Detail_Capacite>
+                </capacite>
+            </capacites>
+        </creature>
+
+        <creature>
+            <nom>Fantôme des Pierres</nom>
+            <attributs>
+                <niveau>9</niveau>
+                <endurance>70</endurance>
+                <puissance>2</puissance>
+                <determination>9</determination>
+                <parade>-</parade>
+                <armure>5</armure>
+            </attributs>
+            <Particularités>Énigmatique, Puissant</Particularités>
+            <competences_combat>
+                <arme>
+                    <nom_arme>Écrasement</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>6/12</degats_arme>
+                    <special_arme>Brise bouclier</special_arme>
+                </arme>
+                <arme>
+                    <nom_arme>Éboulis</nom_arme>
+                    <valeur_arme>2</valeur_arme>
+                    <degats_arme>6/12</degats_arme>
+                </arme>
+            </competences_combat>
+            <capacites>
+                <capacite>
+                    <Titre_Capacite>Brise lame</Titre_Capacite>
+                    <Detail_Capacite>Lorsqu'une arme de corps à corps inflige un Coup perforant au Fantôme des Pierres, dépensez 1 point de Détermination pour briser cette arme. Cette capacité n'affecte pas les armes dotées d'une ou plusieurs Récompenses (enchantées ou autre).</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Impassible</Titre_Capacite>
+                    <Detail_Capacite>Cette créature n'est pas affectée par la manœuvre de combat Intimider l'adversaire, sauf en cas d'une Réussite magique.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Invisible</Titre_Capacite>
+                    <Detail_Capacite>Cette créature est invisible : les tests de VIGILANCE ou d'INSPECTION et les attaques dont elle est la cible perdent (2d), tandis que ses attaques ciblant les Héros qui ne peuvent pas la voir sont favorisées et gagnent (1d). Un Héros qui obtient une Réussite magique lors d'un test de VIGILANCE ou d'INSPECTION peut voir la créature normalement et ignore toutes les pénalités jusqu'à la fin du combat.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Sans vie</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Détermination pour éliminer une Blessure. Quand une attaque inflige à la créature des dégâts censés faire tomber son Endurance à zéro, dépensez 1 point de Détermination pour restaurer ses points d'Endurance au maximum.</Detail_Capacite>
+                </capacite>
+            </capacites>
+        </creature>
+
+        <creature>
+            <nom>Esprit des Anneaux</nom>
+            <attributs>
+                <niveau>6</niveau>
+                <endurance>24</endurance>
+                <puissance>1</puissance>
+                <haine>6</haine>
+                <parade>-</parade>
+                <armure>4</armure>
+            </attributs>
+            <Particularités>Arrogant, Impétueux</Particularités>
+            <competences_combat>
+                <arme>
+                    <nom_arme>Marteau ancestral</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>6/16</degats_arme>
+                    <special_arme>Brise bouclier</special_arme>
+                </arme>
+            </competences_combat>
+            <capacites>
+                <capacite>
+                    <Titre_Capacite>Abomination</Titre_Capacite>
+                    <Detail_Capacite>Au début du premier round de combat, tous les Héros à portée de vue d'une ou plusieurs créatures possédant cette capacité gagnent 3 points d'Ombre (Terreur). Ceux qui ratent leur test d'Ombre sont découragés et ne peuvent pas dépenser d'Espoir pour tout le reste du combat.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Aversion pour le soleil</Titre_Capacite>
+                    <Detail_Capacite>La créature perd 1 point de Haine au début de chaque round qu'elle passe exposée à la lumière directe du soleil.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Épouvantables sortilèges</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour infliger 3 points d'Ombre (Sorcellerie) à un Héros. Une cible Mélancolique ou qui rate son test d'Ombre souffre de la Folie de la Moria (voir page 43) et ne peut reprendre ses esprits que si un des Héros réussit un test d'INSPIRATION. Sinon, elle erre pendant une heure, aveuglée par une gloire illusoire.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Immortel</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour éliminer une Blessure. Quand une attaque inflige à la créature des dégâts censés faire tomber son Endurance à zéro, dépensez 1 point de Haine pour restaurer ses points d'Endurance au maximum. Cette capacité est inefficace contre un Héros maniant une arme magique ayant pour Cible les Morts-Vivants.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Impassible</Titre_Capacite>
+                    <Detail_Capacite>La créature n'est pas affectée par la manœuvre de combat Intimider l'adversaire, sauf en cas d'une Réussite magique.</Detail_Capacite>
+                </capacite>
+            </capacites>
+        </creature>
+
+        <creature>
+            <nom>Le Marteau-de-forge</nom>
+            <attributs>
+                <niveau>10</niveau>
+                <endurance>80</endurance>
+                <puissance>2</puissance>
+                <haine>10</haine>
+                <parade>-</parade>
+                <armure>5</armure>
+            </attributs>
+            <Particularités>Bestial, Pataud</Particularités>
+            <competences_combat>
+                <arme>
+                    <nom_arme>Écrasement</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>6/12</degats_arme>
+                    <special_arme>Étreinte</special_arme>
+                </arme>
+                <arme>
+                    <nom_arme>Marteau de forge</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>8/16</degats_arme>
+                    <special_arme>Brise bouclier</special_arme>
+                </arme>
+            </competences_combat>
+            <capacites>
+                <capacite>
+                    <Titre_Capacite>Cuir robuste</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour gagner (2d) à un jet de Protection.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Effroi</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour infliger 2 points d'Ombre (Terreur) à tous les Héros à portée de vue. Ceux qui ratent leur test d'Ombre sont découragés et ne peuvent pas dépenser d'Espoir pour tout le reste du combat.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Lent d'esprit</Titre_Capacite>
+                    <Detail_Capacite>Un Héros en position de combat rapproché peut tenter une manœuvre de combat spéciale contre la créature : le joueur effectue un test d'ÉNIGMES en tant qu'action principale du round. Si le test est réussi, le Marteau-de-forge perd 1 point de Haine, plus 1 point pour chaque symbole de Réussite obtenu.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Résistance abominable</Titre_Capacite>
+                    <Detail_Capacite>Quand une attaque inflige au Marteau-de-forge des dégâts censés faire tomber son Endurance à zéro, il subit un Coup perforant à la place. S'il est toujours en vie, ses points d'Endurance sont restaurés à la moitié de son maximum.</Detail_Capacite>
+                </capacite>
+            </capacites>
+        </creature>
+
+        <creature>
+            <nom>Gobelin Invisible</nom>
+            <attributs>
+                <niveau>2</niveau>
+                <endurance>8</endurance>
+                <puissance>1</puissance>
+                <haine>2</haine>
+                <parade>-</parade>
+                <armure>1</armure>
+            </attributs>
+            <Particularités>Furtif, Malveillant</Particularités>
+            <competences_combat>
+                <arme>
+                    <nom_arme>Couteau à dents</nom_arme>
+                    <valeur_arme>3*</valeur_arme>
+                    <degats_arme>2/14</degats_arme>
+                    <special_arme>Perforation</special_arme>
+                    <note_arme>* Lorsque la créature est invisible, sa Compétence de Combat est de 5 contre les Héros qui ne peuvent pas la voir.</note_arme>
+                </arme>
+            </competences_combat>
+            <capacites>
+                <capacite>
+                    <Titre_Capacite>Invisible</Titre_Capacite>
+                    <Detail_Capacite>Cette créature est invisible : les tests de VIGILANCE ou d'INSPECTION et les attaques dont elle est la cible perdent (2d), tandis que ses attaques ciblant les Héros qui ne peuvent pas la voir sont favorisées et gagnent (1d). Un Héros qui obtient une Réussite magique lors d'un test de VIGILANCE ou d'INSPECTION peut voir la créature normalement et ignore toutes les pénalités jusqu'à la fin du combat.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Vitesse du serpent</Titre_Capacite>
+                    <Detail_Capacite>Quand la créature est ciblée par une attaque, dépensez 1 point de Haine pour rendre cette attaque défavorisée.</Detail_Capacite>
+                </capacite>
+            </capacites>
+        </creature>
+
+        <creature>
+            <nom>Thu, la Voix de la Flamme</nom>
+            <attributs>
+                <niveau>7</niveau>
+                <endurance>28</endurance>
+                <puissance>2</puissance>
+                <haine>7</haine>
+                <parade>+1</parade>
+                <armure>4</armure>
+            </attributs>
+            <Particularités>Loyal, Secret</Particularités>
+            <competences_combat>
+                <arme>
+                    <nom_arme>Bâton enflammé</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>4/14</degats_arme>
+                    <special_arme>Coup ardent*</special_arme>
+                    <note_arme>* L'attaque brûle la cible et lui inflige une perte d'Endurance sévère due au feu.</note_arme>
+                </arme>
+            </competences_combat>
+            <capacites>
+                <capacite>
+                    <Titre_Capacite>Cri de triomphe</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour restaurer 1 point de Haine à tous les autres alliés participant au combat.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Effroi</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour infliger 2 points d'Ombre (Terreur) à tous les Héros à portée de vue. Ceux qui ratent leur test d'Ombre sont découragés et ne peuvent pas dépenser d'Espoir pour tout le reste du combat.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Épouvantables sortilèges</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour infliger 3 points d'Ombre (Sorcellerie) à un Héros. Une cible Mélancolique ou qui rate son test d'Ombre prend feu et subit une perte d'Endurance fatale due au feu.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Habitant des ténèbres</Titre_Capacite>
+                    <Detail_Capacite>Toutes les attaques effectuées dans l'obscurité sont favorisées.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Impassible</Titre_Capacite>
+                    <Detail_Capacite>Thu n'est pas affecté par la manœuvre de combat Intimider l'adversaire, sauf en cas d'une Réussite magique.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Résistance abominable</Titre_Capacite>
+                    <Detail_Capacite>Quand une attaque inflige à Thu des dégâts censés faire tomber son Endurance à zéro, il subit un Coup perforant à la place. S'il est toujours en vie, ses points d'Endurance sont restaurés à la moitié de son maximum.</Detail_Capacite>
+                </capacite>
+            </capacites>
+        </creature>
+
+        <creature>
+            <nom>Shagram</nom>
+            <attributs>
+                <niveau>5</niveau>
+                <endurance>20</endurance>
+                <puissance>2</puissance>
+                <haine>5</haine>
+                <parade>-</parade>
+                <armure>3</armure>
+            </attributs>
+            <Particularités>Jovial, Sadique</Particularités>
+            <competences_combat>
+                <arme>
+                    <nom_arme>Cimeterre</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>3/16</degats_arme>
+                </arme>
+                <arme>
+                    <nom_arme>Fouet</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>2/14</degats_arme>
+                    <special_arme>Étreinte</special_arme>
+                </arme>
+            </competences_combat>
+            <capacites>
+                <capacite>
+                    <Titre_Capacite>Bravoure</Titre_Capacite>
+                    <Detail_Capacite>La Puissance de Shagram est considérée comme étant de 1 point supplémentaire quand il résiste à la manœuvre de combat Intimider l'adversaire.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Cri de triomphe</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour restaurer 1 point de Haine à tous les autres Orques participant au combat.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Grand bond</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour attaquer un Héros quelle que soit sa position de combat, y compris en position arrière.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Habitant des ténèbres</Titre_Capacite>
+                    <Detail_Capacite>Toutes les attaques effectuées dans l'obscurité sont favorisées.</Detail_Capacite>
+                </capacite>
+            </capacites>
+        </creature>
+
+        <creature>
+            <nom>Le Guetteur de l'Eau</nom>
+            <attributs>
+                <niveau>10</niveau>
+                <endurance>100</endurance>
+                <puissance>3</puissance>
+                <haine>10</haine>
+                <parade>-</parade>
+                <armure>4</armure>
+            </attributs>
+            <Particularités>Attentif, Secret</Particularités>
+            <competences_combat>
+                <arme>
+                    <nom_arme>Tentacule</nom_arme>
+                    <valeur_arme>3</valeur_arme>
+                    <degats_arme>8/16</degats_arme>
+                    <special_arme>Étreinte</special_arme>
+                </arme>
+            </competences_combat>
+            <capacites>
+                <capacite>
+                    <Titre_Capacite>Aversion pour le soleil</Titre_Capacite>
+                    <Detail_Capacite>Le Guetteur de l'Eau perd 1 point de Haine au début de chaque round qu'il passe exposé à la lumière directe du soleil.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Force effroyable</Titre_Capacite>
+                    <Detail_Capacite>En combat rapproché, si une attaque du Guetteur de l'Eau inflige un Coup perforant, dépensez 1 point de Haine pour rendre le jet de Protection de la cible défavorisé.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Habitant des ténèbres</Titre_Capacite>
+                    <Detail_Capacite>Toutes les attaques effectuées dans l'obscurité sont favorisées.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Membres multiples</Titre_Capacite>
+                    <Detail_Capacite>Chaque round, le Guetteur de l'Eau effectue une attaque supplémentaire. Néanmoins, chaque fois qu'il subit une Blessure, il effectue une attaque de moins pour tout le reste du combat.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Puanteur fétide</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour que tous les combattants engagés en combat rapproché contre le Guetteur de l'Eau perdent (1d) à toutes leurs attaques durant le round.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Résistance abominable</Titre_Capacite>
+                    <Detail_Capacite>Quand une attaque inflige au Guetteur de l'Eau des dégâts censés faire tomber son Endurance à zéro, il subit un Coup perforant à la place. S'il est toujours en vie, ses points d'Endurance sont restaurés à la moitié de son maximum.</Detail_Capacite>
+                </capacite>
+                <capacite>
+                    <Titre_Capacite>Tentacule</Titre_Capacite>
+                    <Detail_Capacite>Dépensez 1 point de Haine pour attaquer un Héros quelle que soit sa position de combat, y compris en position arrière (identique à Grand bond).</Detail_Capacite>
+                </capacite>
+            </capacites>
+        </creature>
+    </famille>
 </adversaires>
