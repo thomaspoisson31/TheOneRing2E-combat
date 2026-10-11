@@ -342,6 +342,10 @@ function selectFighterTab(fighter) {
 
     if (fighter.type === 'hero') {
         if (imgEl && fighter.token) {
+            imgEl.onerror = () => {
+                if (imgContainer) imgContainer.style.display = 'none';
+                imgEl.src = '';
+            };
             imgEl.src = `images/PJ/${fighter.token}.png`;
             imgEl.alt = fighter.name;
             if (imgContainer) {
@@ -350,11 +354,11 @@ function selectFighterTab(fighter) {
             }
         } else if (imgContainer) {
             if (imgEl) {
+                imgEl.onerror = null;
                 imgEl.src = '';
                 imgEl.alt = '';
             }
-            imgContainer.style.display = 'flex';
-            imgContainer.style.visibility = 'hidden';
+            imgContainer.style.display = 'none';
         }
 
         // Afficher le profil du héros
@@ -375,6 +379,10 @@ function selectFighterTab(fighter) {
         const urlImage = typeof getAdversaryImagePath === 'function' ? getAdversaryImagePath(creatureName) : fighter.imageUrl;
 
         if (imgEl && urlImage) {
+            imgEl.onerror = () => {
+                if (imgContainer) imgContainer.style.display = 'none';
+                imgEl.src = '';
+            };
             imgEl.src = urlImage;
             imgEl.alt = fighter.name;
             if (imgContainer) {
@@ -383,11 +391,11 @@ function selectFighterTab(fighter) {
             }
         } else if (imgContainer) {
             if (imgEl) {
+                imgEl.onerror = null;
                 imgEl.src = '';
                 imgEl.alt = '';
             }
-            imgContainer.style.display = 'flex';
-            imgContainer.style.visibility = 'hidden';
+            imgContainer.style.display = 'none';
         }
 
         if (creatureInstance && typeof displayCreatureDetails === 'function') {

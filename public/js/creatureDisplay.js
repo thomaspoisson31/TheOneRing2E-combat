@@ -304,8 +304,9 @@ function getFamilyCapacities(familyName) {
 }
 
 function displayCreatureDetails(creature, familyName, instanceId = null) {
-    const name = creature.getElementsByTagName('nom')[0].textContent;
-    const imageUrl = typeof getAdversaryImagePath === 'function' ? getAdversaryImagePath(name) : '';
+    if (typeof saveCurrentCardInputs === 'function') {
+        saveCurrentCardInputs();
+    }
 
     if (!instanceId || isNaN(instanceId)) {
         const fighterTab = document.querySelector('.fighter-tab.active[data-type="creature"]');
@@ -327,6 +328,13 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
         }
     }
     instanceId = parseInt(instanceId);
+
+    if (!isNaN(instanceId) && window.creatureInstances && window.creatureInstances.has(instanceId)) {
+        creature = window.creatureInstances.get(instanceId);
+    }
+
+    const name = creature.getElementsByTagName('nom')[0].textContent;
+    const imageUrl = typeof getAdversaryImagePath === 'function' ? getAdversaryImagePath(name) : '';
 
     const currentAdvantage = creatureInstanceAdvantages.get(instanceId) || 0;
     const advantageText = typeof getAdvantageText === 'function' ? getAdvantageText(currentAdvantage) : '0';
@@ -492,9 +500,9 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
 
     html += `<button class="icon-button card-bottom-left-btn" id="runeButton" onclick="triggerRuneEvent()" title="Avantages"><img src="images/Rune.png" alt="Rune"></button>`;
 
+    creatureCard.dataset.instanceId = instanceId;
     creatureCard.innerHTML = html;
     creatureCard.style.display = 'block';
-    creatureCard.dataset.instanceId = instanceId;
     
     // Mettre à jour la liste des joueurs associés
     updateAssociatedPlayersList(instanceId);
