@@ -495,6 +495,8 @@
                     <Detail_Capacite>Quand Malech est ciblé par une attaque, dépensez 1 point de Haine pour rendre cette attaque défavorisée.</Detail_Capacite>
                 </capacite>
             </capacites>
+            <url_image>public/images/Adversaires/malech.jpg</url_image>
+
         </creature>      
 
         <creature>
