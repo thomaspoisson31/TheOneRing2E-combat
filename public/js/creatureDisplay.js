@@ -305,7 +305,7 @@ function getFamilyCapacities(familyName) {
 
 function displayCreatureDetails(creature, familyName, instanceId = null) {
     const name = creature.getElementsByTagName('nom')[0].textContent;
-    const imageUrl = creature.getElementsByTagName('url_image')[0]?.textContent;
+    const imageUrl = typeof getAdversaryImagePath === 'function' ? getAdversaryImagePath(name) : '';
 
     if (!instanceId || isNaN(instanceId)) {
         const fighterTab = document.querySelector('.fighter-tab.active[data-type="creature"]');

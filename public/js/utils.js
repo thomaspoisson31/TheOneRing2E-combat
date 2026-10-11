@@ -6,6 +6,14 @@ function formatNameToInitials(name) {
         .join('');
 }
 
+function getAdversaryImagePath(name) {
+    if (!name) return '';
+    const normalized = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const lower = normalized.toLowerCase();
+    const slug = lower.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    return `images/Adversaires/${slug}.jpg`;
+}
+
 function getAdvantageText(value) {
     switch (value) {
         case -2: return '-2D';
@@ -117,3 +125,4 @@ function saveCurrentCardInputs() {
 window.getNextPostureState = getNextPostureState;
 window.updatePostureElementStyle = updatePostureElementStyle;
 window.saveCurrentCardInputs = saveCurrentCardInputs;
+window.getAdversaryImagePath = getAdversaryImagePath;
