@@ -130,7 +130,7 @@ function calculateInitiative() {
 
             const creatureInstance = window.creatureInstances ? window.creatureInstances.get(instanceId) : null;
             const creatureName = creatureInstance?.getElementsByTagName('nom')[0]?.textContent || creatureTab.innerText;
-            const urlImage = creatureInstance?.getElementsByTagName('url_image')[0]?.textContent || '';
+            const urlImage = typeof getAdversaryImagePath === 'function' ? getAdversaryImagePath(creatureName) : '';
 
             orderedFighters.push({
                 type: 'creature',
@@ -149,7 +149,7 @@ function calculateInitiative() {
         const instanceId = parseInt(creatureTab.dataset.instanceId);
         const creatureInstance = window.creatureInstances ? window.creatureInstances.get(instanceId) : null;
         const creatureName = creatureInstance?.getElementsByTagName('nom')[0]?.textContent || creatureTab.innerText;
-        const urlImage = creatureInstance?.getElementsByTagName('url_image')[0]?.textContent || '';
+        const urlImage = typeof getAdversaryImagePath === 'function' ? getAdversaryImagePath(creatureName) : '';
 
         orderedFighters.push({
             type: 'creature',
@@ -371,7 +371,8 @@ function selectFighterTab(fighter) {
         }
     } else {
         const creatureInstance = window.creatureInstances ? window.creatureInstances.get(fighter.instanceId) : null;
-        const urlImage = creatureInstance?.getElementsByTagName('url_image')[0]?.textContent || fighter.imageUrl;
+        const creatureName = creatureInstance?.getElementsByTagName('nom')[0]?.textContent || fighter.name;
+        const urlImage = typeof getAdversaryImagePath === 'function' ? getAdversaryImagePath(creatureName) : fighter.imageUrl;
 
         if (imgEl && urlImage) {
             imgEl.src = urlImage;
