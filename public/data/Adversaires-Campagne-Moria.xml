@@ -495,7 +495,7 @@
                     <Detail_Capacite>Quand Malech est ciblé par une attaque, dépensez 1 point de Haine pour rendre cette attaque défavorisée.</Detail_Capacite>
                 </capacite>
             </capacites>
-            <url_image>public/images/Adversaires/malech.jpg</url_image>
+            <url_image>https://github.com/thomaspoisson31/TheOneRing2E-combat/blob/5e00bff66d5ed97ac747463b2b25933fb082a8a3/public/images/Adversaires/malech.jpg</url_image>
 
         </creature>      
 
@@ -541,6 +541,7 @@
                     <Detail_Capacite>Quand Yagul est ciblé par une attaque, dépensez 1 point de Haine pour rendre cette attaque défavorisée.</Detail_Capacite>
                 </capacite>
             </capacites>
+        <url_image>https://github.com/thomaspoisson31/TheOneRing2E-combat/blob/5e00bff66d5ed97ac747463b2b25933fb082a8a3/public/images/Adversaires/malech.jpg</url_image>
         </creature>
 
         <creature>
