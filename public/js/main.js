@@ -340,25 +340,28 @@ function selectFighterTab(fighter) {
     const imgContainer = document.getElementById('fighterImageContainer');
     const imgEl = document.getElementById('fighterIllustrationImg');
 
+    if (imgContainer) {
+        imgContainer.style.display = '';
+    }
+
     if (fighter.type === 'hero') {
         if (imgEl && fighter.token) {
             imgEl.onerror = () => {
-                if (imgContainer) imgContainer.style.display = 'none';
-                imgEl.src = '';
+                if (imgContainer) imgContainer.style.visibility = 'hidden';
+                imgEl.style.display = 'none';
             };
+            if (imgContainer) imgContainer.style.visibility = 'visible';
+            imgEl.style.display = 'block';
             imgEl.src = `images/PJ/${fighter.token}.png`;
             imgEl.alt = fighter.name;
-            if (imgContainer) {
-                imgContainer.style.display = 'flex';
-                imgContainer.style.visibility = 'visible';
-            }
         } else if (imgContainer) {
             if (imgEl) {
                 imgEl.onerror = null;
                 imgEl.src = '';
                 imgEl.alt = '';
+                imgEl.style.display = 'none';
             }
-            imgContainer.style.display = 'none';
+            imgContainer.style.visibility = 'hidden';
         }
 
         // Afficher le profil du héros
@@ -380,22 +383,21 @@ function selectFighterTab(fighter) {
 
         if (imgEl && urlImage) {
             imgEl.onerror = () => {
-                if (imgContainer) imgContainer.style.display = 'none';
-                imgEl.src = '';
+                if (imgContainer) imgContainer.style.visibility = 'hidden';
+                imgEl.style.display = 'none';
             };
+            if (imgContainer) imgContainer.style.visibility = 'visible';
+            imgEl.style.display = 'block';
             imgEl.src = urlImage;
             imgEl.alt = fighter.name;
-            if (imgContainer) {
-                imgContainer.style.display = 'flex';
-                imgContainer.style.visibility = 'visible';
-            }
         } else if (imgContainer) {
             if (imgEl) {
                 imgEl.onerror = null;
                 imgEl.src = '';
                 imgEl.alt = '';
+                imgEl.style.display = 'none';
             }
-            imgContainer.style.display = 'none';
+            imgContainer.style.visibility = 'hidden';
         }
 
         if (creatureInstance && typeof displayCreatureDetails === 'function') {
