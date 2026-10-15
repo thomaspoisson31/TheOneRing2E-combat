@@ -223,7 +223,7 @@
 
     </famille>
 
-    <famille nom="Moria - Orques de la Moria">
+    <famille nom="01_Moria - Orques de la Moria">
 
         <son1>Orques.mp3</son1>
         <son2>Orques2.mp3</son2>
@@ -831,7 +831,7 @@
 
     </famille>
 
-    <famille nom="Moria - Orques du Mordor">
+    <famille nom="02_ Moria - Orques du Mordor">
         <creature>
             <nom>Messager de Lugbúrz</nom>
             <attributs>
@@ -980,7 +980,7 @@
 
     </famille>
 
-    <famille nom="Moria - Nains de la Moria">
+    <famille nom="03_ Moria - Nains de la Moria">
         <creature>
             <nom>Esclave Nain Halluciné</nom>
             <attributs>
@@ -1049,7 +1049,7 @@
 
     </famille>
 
-    <famille nom="Moria - Autres choses terribles">
+    <famille nom="04_ Moria - Autres choses terribles">
         <creature>
             <nom>Spectre de Cendres</nom>
             <attributs>
@@ -1245,7 +1245,7 @@
         </creature>
     </famille>
 
-    <famille nom="Moria - Adversaires uniques">
+    <famille nom="05_ Moria - Adversaires uniques">
 
         <creature>
             <nom>Vigne-de-sang</nom>
@@ -1468,11 +1468,8 @@
                 </capacite>
             </capacites>
         </creature>
-    </famille>
-
-    <famille nom="Moria - Le Balrog">
         <creature>
-            <nom>Fléau de Durin</nom>
+            <nom>Le Balrog</nom>
             <attributs>
                 <niveau>12</niveau>
                 <endurance>150</endurance>
