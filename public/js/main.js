@@ -1,20 +1,134 @@
 // Variables globales pour PJ
 let pjDocumentDoc = null;
 
-// Chargement initial du XML et population de la liste
-window.addEventListener('DOMContentLoaded', function () {
-    // Charger le fichier XML des adversaires
-    fetch('data/Adversaires2.xml')
-        .then(response => response.text())
-        .then(str => {
-            const parser = new DOMParser();
-            xmlDoc = parser.parseFromString(str, "text/xml");
+function findCreatureInXml(searchName) {
+    if (!xmlDoc) return null;
+    const normalizedSearch = searchName.replace(/_/g, ' ').trim().toLowerCase();
+    const familles = xmlDoc.getElementsByTagName('famille');
+    for (let famille of familles) {
+        const familyName = famille.getAttribute('nom');
+        const creatures = Array.from(famille.querySelectorAll('creature, adversaire'));
+        for (let creature of creatures) {
+            const creatureNameEl = creature.getElementsByTagName('nom')[0];
+            if (creatureNameEl) {
+                const creatureName = creatureNameEl.textContent.replace(/_/g, ' ').trim().toLowerCase();
+                if (creatureName === normalizedSearch) {
+                    return { creature, familyName };
+                }
+            }
+        }
+    }
+    return null;
+}
+
+function processUrlAdvParams(urlParams) {
+    const advParams = urlParams.getAll('Adv');
+    const nbParams = urlParams.getAll('Nb');
+
+    if (advParams.length === 0) return;
+
+    advParams.forEach((advRaw, index) => {
+        if (!advRaw || advRaw.trim() === '') return;
+
+        const nbRaw = nbParams[index];
+        let count = 1;
+
+        if (nbRaw !== undefined && nbRaw !== null && nbRaw.trim() !== '') {
+            const parsedNb = Number(nbRaw.trim());
+            if (!isNaN(parsedNb) && Number.isInteger(parsedNb) && parsedNb >= 1 && parsedNb <= 20) {
+                count = parsedNb;
+            } else {
+                console.warn(`Valeur Nb invalide ou supérieure à 20 ignorée pour "${advRaw}": "${nbRaw}". Utilisation de la valeur par défaut 1.`);
+            }
+        }
+
+        const match = findCreatureInXml(advRaw);
+        if (match) {
+            for (let i = 0; i < count; i++) {
+                if (typeof displayCreature === 'function') {
+                    displayCreature(match.creature, match.familyName);
+                }
+            }
+        } else {
+            console.warn(`Adversaire non trouvé dans la liste chargée: "${advRaw}"`);
+        }
+    });
+}
+
+function loadAdversariesFromUrlOrDefault() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const fileParam = urlParams.get('File');
+
+    let fileName = 'Adversaires2.xml';
+    let isCustomFile = false;
+
+    if (fileParam && fileParam.trim() !== '') {
+        const sanitized = fileParam.trim().replace(/\.xml$/i, '');
+        fileName = `${sanitized}.xml`;
+        isCustomFile = true;
+    }
+
+    const loadXmlFile = (targetFile) => {
+        return fetch(`data/${targetFile}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('text/html')) {
+                    throw new Error(`Fichier non trouvé (fallback HTML)`);
+                }
+                return response.text();
+            })
+            .then(str => {
+                if (str.trim().toLowerCase().startsWith('<!doctype') || str.trim().toLowerCase().startsWith('<html')) {
+                    throw new Error(`Le contenu n'est pas un fichier XML d'adversaires`);
+                }
+                return str;
+            });
+    };
+
+    const processXmlAndParams = (str, loadedFileName) => {
+        const parser = new DOMParser();
+        xmlDoc = parser.parseFromString(str, "text/xml");
+
+        const parserError = xmlDoc.getElementsByTagName('parsererror');
+        if (parserError.length > 0 || (xmlDoc.getElementsByTagName('famille').length === 0 && xmlDoc.getElementsByTagName('adversaires').length === 0)) {
+            throw new Error('Structure XML invalide ou non reconnue');
+        }
+
+        if (typeof populateCreatureSelect === 'function') {
             populateCreatureSelect();
+        }
+        if (typeof updateModalFileSelection === 'function') {
+            updateModalFileSelection(loadedFileName);
+        }
+        processUrlAdvParams(urlParams);
+    };
+
+    loadXmlFile(fileName)
+        .then(str => {
+            processXmlAndParams(str, fileName);
         })
         .catch(error => {
-            console.error('Erreur lors du chargement du fichier XML:', error);
-            alert('Erreur lors du chargement du fichier XML');
+            console.warn(`Erreur lors du chargement du fichier XML "${fileName}":`, error);
+            if (isCustomFile) {
+                console.warn('Chargement du fichier par défaut Adversaires2.xml...');
+                loadXmlFile('Adversaires2.xml')
+                    .then(str => {
+                        processXmlAndParams(str, 'Adversaires2.xml');
+                    })
+                    .catch(defaultErr => {
+                        console.error('Erreur lors du chargement du fichier par défaut Adversaires2.xml:', defaultErr);
+                    });
+            }
         });
+}
+
+// Chargement initial du XML et population de la liste
+window.addEventListener('DOMContentLoaded', function () {
+    // Charger le fichier XML des adversaires (URL param ou par défaut)
+    loadAdversariesFromUrlOrDefault();
 
     // Charger le fichier XML des PJ
     fetch('data/PJ.xml')
