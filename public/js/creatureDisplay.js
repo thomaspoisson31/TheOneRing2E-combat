@@ -157,32 +157,15 @@ function displayCreature(creature, familyName, resetSelect = true) {
 
     });
     
-    // Déterminer où ajouter l'onglet de la créature
-    let targetContainer = document.getElementById('creatureTabs'); // Par défaut dans le conteneur principal (à droite)
-    const activePlayerTab = document.querySelector('.player-tab.active');
-    
-    if (activePlayerTab) {
-        const wrapper = activePlayerTab.closest('.player-wrapper');
-        const opponentsContainer = wrapper ? wrapper.querySelector('.pj-opponents') : null;
-        
-        if (opponentsContainer) {
-            targetContainer = opponentsContainer;
-            
-            // Associer la créature au PJ actif
-            const playerName = wrapper.dataset.playerName;
-            if (playerName) {
-                if (!creaturePlayerAssociations.has(instanceId)) {
-                    creaturePlayerAssociations.set(instanceId, new Set());
-                }
-                creaturePlayerAssociations.get(instanceId).add(playerName);
-            }
-        }
+    const targetContainer = document.getElementById('creatureTabs');
+    if (targetContainer) {
+        targetContainer.appendChild(tabElement);
     }
-
-    targetContainer.appendChild(tabElement);
     tabElement.click();
 
-    if (typeof updateRandomAssociationButtonVisibility === 'function') {
+    if (typeof performRandomAssociation === 'function') {
+        performRandomAssociation();
+    } else if (typeof updateRandomAssociationButtonVisibility === 'function') {
         updateRandomAssociationButtonVisibility();
     }
 }

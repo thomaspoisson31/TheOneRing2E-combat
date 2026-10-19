@@ -815,8 +815,16 @@ function createPlayerTabs(pjDoc) {
             updateAssociatedPlayersList(instanceId);
         }
 
-        updateRandomAssociationButtonVisibility();
+        if (typeof performRandomAssociation === 'function') {
+            performRandomAssociation();
+        } else {
+            updateRandomAssociationButtonVisibility();
+        }
     });
+
+    if (typeof performRandomAssociation === 'function') {
+        performRandomAssociation();
+    }
 }
 
 function getUnassignedCreatureTabs() {
@@ -864,14 +872,7 @@ function updateRandomAssociationButtonVisibility() {
     const diceBtn = document.getElementById('randomAssociationBtn');
     if (!diceBtn) return;
 
-    const unassignedTabs = getUnassignedCreatureTabs();
-    const eligibleHeroes = getEligibleHeroes();
-
-    if (unassignedTabs.length > 0 && eligibleHeroes.length > 0) {
-        diceBtn.style.display = 'inline-flex';
-    } else {
-        diceBtn.style.display = 'none';
-    }
+    diceBtn.style.display = 'none';
 }
 window.updateRandomAssociationButtonVisibility = updateRandomAssociationButtonVisibility;
 
