@@ -33,6 +33,21 @@ function openFileModal() {
     }
 }
 
+// Mettre à jour la sélection visuelle dans la liste des fichiers
+function updateModalFileSelection(fileName) {
+    const fileList = document.getElementById('fileList');
+    if (!fileList) return;
+    const items = fileList.getElementsByTagName('li');
+    for (let item of items) {
+        if (item.dataset.file === fileName) {
+            item.classList.add('selected');
+        } else {
+            item.classList.remove('selected');
+        }
+    }
+}
+window.updateModalFileSelection = updateModalFileSelection;
+
 // Charger le fichier sélectionné
 function loadSelectedFile() {
     const fileList = document.getElementById('fileList');
