@@ -105,7 +105,7 @@
 
     // Track custom token drag offsets for adversary/PJ override coordinates if needed
     // Map of tokenKey -> { x: origX, y: origY }
-    const customTokenPositions = new Map();
+    const customTokenPositions = window.customTokenPositions || new Map();
     window.customTokenPositions = customTokenPositions;
 
     function initBattlemapWindow() {
@@ -296,7 +296,11 @@
             heroes.forEach((hero, index) => {
                 let origX, origY;
 
-                if (count === 1) {
+                if (customTokenPositions.has(`pj_${hero.playerIndex}`)) {
+                    const customPos = customTokenPositions.get(`pj_${hero.playerIndex}`);
+                    origX = customPos.x;
+                    origY = customPos.y;
+                } else if (count === 1) {
                     origX = center.x;
                     origY = center.y;
                 } else {
@@ -577,6 +581,7 @@
             const origY = currentScreenY / scaleY;
 
             if (type === 'pj') {
+                customTokenPositions.set(`pj_${id}`, { x: origX, y: origY });
                 const newPosture = getPostureFromCoords(origX, origY);
                 if (window.playerAdvantages) {
                     window.playerAdvantages.set(id, newPosture);

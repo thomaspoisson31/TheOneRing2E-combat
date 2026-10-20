@@ -268,6 +268,10 @@ function cyclePlayerAdvantage(playerIndex, indicatorElement) {
     const newValue = typeof getNextPostureState === 'function' ? getNextPostureState(currentValue) : 0;
     playerAdvantages.set(playerIndex, newValue);
 
+    if (window.customTokenPositions && window.customTokenPositions.has(`pj_${playerIndex}`)) {
+        window.customTokenPositions.delete(`pj_${playerIndex}`);
+    }
+
     if (indicatorElement && typeof updatePostureElementStyle === 'function') {
         updatePostureElementStyle(indicatorElement, newValue);
     }
