@@ -16,6 +16,9 @@
             <button id="engagementTab" class="tab-btn engagement-tab active" title="Engagement" onclick="switchTab('engagement')">
                 <img src="images/sword-line.svg" alt="Engagement" class="tab-icon">
             </button>
+            <button id="battlemapTab" class="tab-btn engagement-tab" title="Battlemap" style="display: none;" onclick="toggleBattlemapWindow()">
+                <img src="images/map.svg" alt="Battlemap" class="tab-icon">
+            </button>
 
             <!-- Stage 2 Fighter Tabs Strip -->
             <div class="fighter-tabs-wrapper">
@@ -94,6 +97,26 @@
         </div>
     </div>
 
+    <!-- Fenêtre volante pour la Battlemap -->
+    <div id="battlemapWindow" class="battlemap-window" style="display: none;">
+        <div class="battlemap-window-header">
+            <span class="battlemap-window-title">Battlemap</span>
+            <button class="close-button" onclick="closeBattlemapWindow()">×</button>
+        </div>
+        <div class="battlemap-window-content">
+            <div class="battlemap-container">
+                <img id="battlemapImg" src="images/LAU-Stance-Mat-Grass.jpg" alt="Battlemap" class="battlemap-image" usemap="#image-map">
+                <map name="image-map">
+                    <area target="" alt="AVANCE" title="AVANCE" href="" coords="1516,1141,2049,1381,2589,1153,2721,1311,2692,1564,2411,1731,2078,1789,1719,1752,1444,1596,1383,1394,1401,1285,2884,1006,3101,1295,3094,1643,2967,1853,2682,2044,2208,2174,1781,2164,1325,2004,1050,1787,952,1444,1028,1194,1202,1013,1484,1122,1368,1277,1412,1585,1690,1758,2059,1813,2417,1751,2707,1578,2747,1306,2620,1129" shape="poly">
+                    <area target="" alt="EXPOSEE" title="EXPOSEE" href="" coords="1205,1011,1516,1145,1364,1369,1502,1648,1875,1771,2200,1778,2526,1677,2692,1500,2700,1268,2577,1138,2873,1008,3094,1279,3156,1489,3025,1800,2707,2049,2186,2180,1683,2144,1267,1963,1013,1731,945,1366,1021,1178" shape="poly">
+                    <area target="" alt="DEFENSIVE" title="DEFENSIVE" href="" coords="880,866,1202,1007,959,1329,992,1691,1260,1962,1520,2096,2034,2172,2360,2150,2743,2013,2928,1875,3098,1648,3141,1412,3058,1199,2881,1000,3199,859,3510,1152,3655,1459,3666,1798,3445,2185,3051,2478,2479,2646,1972,2679,1469,2606,999,2440,681,2201,424,1769,442,1412,623,1105" shape="poly">
+                    <area target="" alt="ARRIERE" title="ARRIERE" href="" coords="413,1685,644,2231,1216,2549,1820,2687,2464,2680,3090,2474,3517,2162,3662,1707,4089,1714,4093,3381,15,3385,8,1699" shape="poly">
+                </map>
+                <div id="battlemapTokensOverlay" class="battlemap-tokens-overlay"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Ordre des scripts conservé -->
     <script src="/js/utils.js"></script>
     <script src="/js/constants.js"></script>
@@ -105,6 +128,7 @@
     <script src="/js/fileLoader.js"></script>
     <script src="/js/eventHandlers.js"></script>
     <script src="/js/touchDrag.js"></script>
+    <script src="/js/battlemap.js"></script>
     <script src="/js/main.js"></script>
 
 </body>
