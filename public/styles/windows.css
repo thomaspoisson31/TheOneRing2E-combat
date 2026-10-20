@@ -252,3 +252,27 @@
     font-weight: bold;
     font-size: 16px;
 }
+
+.battlemap-token.adversary-token {
+    border: 2px solid var(--title-color, #b30f04);
+    background-color: #2b0000;
+}
+
+.battlemap-token.adversary-token:hover {
+    border-color: #ff4d4d;
+}
+
+.battlemap-token .adversary-token-name {
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 10px;
+    text-align: center;
+    line-height: 1.1;
+    word-break: break-word;
+    overflow: hidden;
+    max-height: 36px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    padding: 0 2px;
+}

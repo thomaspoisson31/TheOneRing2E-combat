@@ -28,11 +28,85 @@
         2: { radiusX: 1100, radiusY: 200, startAngle: 30, endAngle: 150 }   // ARRIERE
     };
 
+    /**
+     * Ray-casting point-in-polygon algorithm
+     * @param {Array<number>} point [x, y]
+     * @param {Array<Array<number>>} vs Array of [x, y] vertices
+     * @returns {boolean}
+     */
+    function pointInPolygon(point, vs) {
+        const x = point[0], y = point[1];
+        let inside = false;
+        for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+            const xi = vs[i][0], yi = vs[i][1];
+            const xj = vs[j][0], yj = vs[j][1];
+            const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
+    }
+
+    /**
+     * Parses area polygons from the image map
+     * @returns {Array<{posture: number, vertices: Array<Array<number>>}>}
+     */
+    function getPolygonZones() {
+        const mapAreaList = document.querySelectorAll('map[name="image-map"] area');
+        const postureMap = {
+            'AVANCE': 1,
+            'EXPOSEE': 0,
+            'DEFENSIVE': 3,
+            'ARRIERE': 2
+        };
+        const zones = [];
+        mapAreaList.forEach(area => {
+            const alt = area.getAttribute('alt');
+            const coordsStr = area.getAttribute('coords');
+            if (alt && coordsStr && postureMap[alt] !== undefined) {
+                const rawCoords = coordsStr.split(',').map(Number);
+                const vertices = [];
+                for (let i = 0; i < rawCoords.length; i += 2) {
+                    if (!isNaN(rawCoords[i]) && !isNaN(rawCoords[i + 1])) {
+                        vertices.push([rawCoords[i], rawCoords[i + 1]]);
+                    }
+                }
+                zones.push({
+                    posture: postureMap[alt],
+                    vertices: vertices
+                });
+            }
+        });
+        return zones;
+    }
+
+    /**
+     * Determines combat posture for given original coordinates (0-4096, 0-3385)
+     * @param {number} origX
+     * @param {number} origY
+     * @returns {number} posture index (1: AVANCE, 0: EXPOSEE, 3: DEFENSIVE, 2: ARRIERE)
+     */
+    function getPostureFromCoords(origX, origY) {
+        const zones = getPolygonZones();
+        for (const zone of zones) {
+            if (pointInPolygon([origX, origY], zone.vertices)) {
+                return zone.posture;
+            }
+        }
+        return 2; // Default to ARRIERE if outside all defined zones
+    }
+
+    window.getPostureFromCoords = getPostureFromCoords;
+
     let isWindowDragging = false;
     let dragStartX = 0;
     let dragStartY = 0;
     let initialWinLeft = 0;
     let initialWinTop = 0;
+
+    // Track custom token drag offsets for adversary/PJ override coordinates if needed
+    // Map of tokenKey -> { x: origX, y: origY }
+    const customTokenPositions = new Map();
+    window.customTokenPositions = customTokenPositions;
 
     function initBattlemapWindow() {
         const battlemapWin = document.getElementById('battlemapWindow');
@@ -176,6 +250,10 @@
         const scaleX = renderedWidth / ORIGINAL_WIDTH;
         const scaleY = renderedHeight / ORIGINAL_HEIGHT;
 
+        // Map to store calculated original position (4096x3385) for each playerIndex
+        const heroPositions = new Map();
+        const heroNamesMap = new Map();
+
         // Group heroes by their posture
         const playerWrappers = Array.from(document.querySelectorAll('.player-wrapper'));
         const postureGroups = { 0: [], 1: [], 2: [], 3: [] };
@@ -187,6 +265,8 @@
             const posture = (window.playerAdvantages && window.playerAdvantages.has(playerIndex))
                 ? window.playerAdvantages.get(playerIndex)
                 : 0;
+
+            heroNamesMap.set(playerName, playerIndex);
 
             if (postureGroups[posture] !== undefined) {
                 postureGroups[posture].push({
@@ -226,6 +306,8 @@
                     origY = center.y + arc.radiusY * Math.sin(angleRad);
                 }
 
+                heroPositions.set(hero.playerIndex, { x: origX, y: origY });
+
                 const screenX = origX * scaleX;
                 const screenY = origY * scaleY;
 
@@ -246,9 +328,272 @@
                     tokenEl.appendChild(nameSpan);
                 }
 
+                // Enable token drag for PJ
+                makeTokenDraggable(tokenEl, 'pj', hero.playerIndex, screenX, screenY);
+
                 overlay.appendChild(tokenEl);
             });
         });
+
+        // Collect engaged adversaries and group them by engagement target
+        // Map of adversaryInstanceId -> { name, engagedHeroIndices: [] }
+        const engagedAdversaries = [];
+
+        if (window.creatureInstances) {
+            window.creatureInstances.forEach((creatureInst, instanceId) => {
+                const name = creatureInst.getElementsByTagName('nom')[0]?.textContent || `Créature ${instanceId}`;
+                const engagedHeroIndices = [];
+
+                const associatedSet = window.creaturePlayerAssociations ? window.creaturePlayerAssociations.get(instanceId) : null;
+                if (associatedSet) {
+                    associatedSet.forEach(playerName => {
+                        if (heroNamesMap.has(playerName)) {
+                            const pIdx = heroNamesMap.get(playerName);
+                            if (heroPositions.has(pIdx) && !engagedHeroIndices.includes(pIdx)) {
+                                engagedHeroIndices.push(pIdx);
+                            }
+                        }
+                    });
+                }
+
+                if (engagedHeroIndices.length > 0) {
+                    engagedAdversaries.push({
+                        instanceId,
+                        name,
+                        engagedHeroIndices
+                    });
+                }
+            });
+        }
+
+        // Group engaged adversaries by their hero combination key
+        const singleHeroGroups = new Map(); // playerIndex -> array of adversary items
+        const multiHeroGroups = new Map(); // key "p1_p2_..." -> array of adversary items
+
+        engagedAdversaries.forEach(adv => {
+            if (adv.engagedHeroIndices.length === 1) {
+                const pIdx = adv.engagedHeroIndices[0];
+                if (!singleHeroGroups.has(pIdx)) singleHeroGroups.set(pIdx, []);
+                singleHeroGroups.get(pIdx).push(adv);
+            } else {
+                const sortedIndices = [...adv.engagedHeroIndices].sort((a, b) => a - b);
+                const key = sortedIndices.join('_');
+                if (!multiHeroGroups.has(key)) multiHeroGroups.set(key, []);
+                multiHeroGroups.get(key).push(adv);
+            }
+        });
+
+        // Place single hero engaged adversaries in an arc around the hero
+        singleHeroGroups.forEach((advList, pIdx) => {
+            const heroPos = heroPositions.get(pIdx);
+            if (!heroPos) return;
+
+            const count = advList.length;
+            const radius = 180; // Distance in original image coordinates
+            const baseAngle = -90; // Top side
+            const spread = count > 1 ? 70 : 0; // Total angular spread
+
+            advList.forEach((adv, idx) => {
+                let origX, origY;
+
+                if (customTokenPositions.has(`adversary_${adv.instanceId}`)) {
+                    const customPos = customTokenPositions.get(`adversary_${adv.instanceId}`);
+                    origX = customPos.x;
+                    origY = customPos.y;
+                } else {
+                    const angleDeg = count === 1
+                        ? baseAngle
+                        : (baseAngle - spread / 2) + (idx / (count - 1)) * spread;
+                    const angleRad = (angleDeg * Math.PI) / 180;
+                    origX = heroPos.x + radius * Math.cos(angleRad);
+                    origY = heroPos.y + radius * Math.sin(angleRad);
+                }
+
+                renderAdversaryToken(adv, origX, origY, scaleX, scaleY, overlay);
+            });
+        });
+
+        // Place multi-hero engaged adversaries at the midpoint/centroid between those heroes
+        multiHeroGroups.forEach((advList, key) => {
+            const heroIndices = key.split('_').map(Number);
+            let sumX = 0, sumY = 0, validCount = 0;
+
+            heroIndices.forEach(pIdx => {
+                const pos = heroPositions.get(pIdx);
+                if (pos) {
+                    sumX += pos.x;
+                    sumY += pos.y;
+                    validCount++;
+                }
+            });
+
+            if (validCount === 0) return;
+
+            const centroidX = sumX / validCount;
+            const centroidY = sumY / validCount;
+
+            const count = advList.length;
+            const radiusOffset = 90; // Spread radius if multiple adversaries share exact same multi-hero group
+
+            advList.forEach((adv, idx) => {
+                let origX, origY;
+
+                if (customTokenPositions.has(`adversary_${adv.instanceId}`)) {
+                    const customPos = customTokenPositions.get(`adversary_${adv.instanceId}`);
+                    origX = customPos.x;
+                    origY = customPos.y;
+                } else if (count === 1) {
+                    origX = centroidX;
+                    origY = centroidY;
+                } else {
+                    const angleRad = ((idx / count) * 360 * Math.PI) / 180;
+                    origX = centroidX + radiusOffset * Math.cos(angleRad);
+                    origY = centroidY + radiusOffset * Math.sin(angleRad);
+                }
+
+                renderAdversaryToken(adv, origX, origY, scaleX, scaleY, overlay);
+            });
+        });
+    }
+
+    /**
+     * Renders a single adversary token on the battlemap overlay
+     */
+    function renderAdversaryToken(adv, origX, origY, scaleX, scaleY, overlay) {
+        const screenX = origX * scaleX;
+        const screenY = origY * scaleY;
+
+        const tokenEl = document.createElement('div');
+        tokenEl.className = 'battlemap-token adversary-token';
+        tokenEl.title = adv.name;
+        tokenEl.style.left = `${screenX}px`;
+        tokenEl.style.top = `${screenY}px`;
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'adversary-token-name';
+        nameSpan.textContent = adv.name;
+        tokenEl.appendChild(nameSpan);
+
+        makeTokenDraggable(tokenEl, 'adversary', adv.instanceId, screenX, screenY);
+
+        overlay.appendChild(tokenEl);
+    }
+
+    /**
+     * Makes a battlemap token draggable across the image coordinate space
+     */
+    function makeTokenDraggable(tokenEl, type, id, initialScreenX, initialScreenY) {
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let tokenStartX = initialScreenX, tokenStartY = initialScreenY;
+
+        const onStart = (e) => {
+            e.stopPropagation(); // prevent window dragging
+            isDragging = true;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            startX = clientX;
+            startY = clientY;
+
+            tokenStartX = parseFloat(tokenEl.style.left) || initialScreenX;
+            tokenStartY = parseFloat(tokenEl.style.top) || initialScreenY;
+
+            tokenEl.style.transition = 'none';
+
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('touchmove', onMove, { passive: false });
+            document.addEventListener('mouseup', onEnd);
+            document.addEventListener('touchend', onEnd);
+        };
+
+        const onMove = (e) => {
+            if (!isDragging) return;
+            if (e.cancelable) e.preventDefault();
+
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            const deltaX = clientX - startX;
+            const deltaY = clientY - startY;
+
+            let currentX = tokenStartX + deltaX;
+            let currentY = tokenStartY + deltaY;
+
+            const img = document.getElementById('battlemapImg');
+            if (img) {
+                currentX = Math.max(0, Math.min(currentX, img.clientWidth));
+                currentY = Math.max(0, Math.min(currentY, img.clientHeight));
+            }
+
+            tokenEl.style.left = `${currentX}px`;
+            tokenEl.style.top = `${currentY}px`;
+        };
+
+        const onEnd = (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('touchmove', onMove);
+            document.removeEventListener('mouseup', onEnd);
+            document.removeEventListener('touchend', onEnd);
+
+            tokenEl.style.transition = '';
+
+            const img = document.getElementById('battlemapImg');
+            if (!img || img.clientWidth === 0 || img.clientHeight === 0) return;
+
+            const currentScreenX = parseFloat(tokenEl.style.left);
+            const currentScreenY = parseFloat(tokenEl.style.top);
+
+            const scaleX = img.clientWidth / ORIGINAL_WIDTH;
+            const scaleY = img.clientHeight / ORIGINAL_HEIGHT;
+
+            const origX = currentScreenX / scaleX;
+            const origY = currentScreenY / scaleY;
+
+            if (type === 'pj') {
+                const newPosture = getPostureFromCoords(origX, origY);
+                if (window.playerAdvantages) {
+                    window.playerAdvantages.set(id, newPosture);
+                }
+                // Update indicator elements and card views across the app
+                const wrapper = document.querySelector(`.player-wrapper[data-player-index="${id}"]`);
+                if (wrapper) {
+                    const indicator = wrapper.querySelector('.posture-advantage');
+                    if (indicator && typeof window.updatePostureElementStyle === 'function') {
+                        window.updatePostureElementStyle(indicator, newPosture);
+                    }
+                }
+                // Update card view if open
+                if (window.playerInstances && window.playerInstances.has(id)) {
+                    const activePlayerTab = document.querySelector('.player-tab.active');
+                    if (activePlayerTab) {
+                        const activeWrapper = activePlayerTab.closest('.player-wrapper');
+                        if (activeWrapper && parseInt(activeWrapper.dataset.playerIndex) === id) {
+                            if (typeof window.displayPlayerProfile === 'function') {
+                                window.displayPlayerProfile(window.playerInstances.get(id));
+                            }
+                        }
+                    }
+                }
+                // Update creature card if open
+                const creatureCard = document.getElementById('creatureCard');
+                if (creatureCard && creatureCard.style.display !== 'none' && creatureCard.dataset.instanceId) {
+                    const displayedInstanceId = parseInt(creatureCard.dataset.instanceId);
+                    if (typeof window.updateAssociatedPlayersList === 'function' && !isNaN(displayedInstanceId)) {
+                        window.updateAssociatedPlayersList(displayedInstanceId);
+                    }
+                }
+                updateBattlemapTokens();
+            } else if (type === 'adversary') {
+                customTokenPositions.set(`adversary_${id}`, { x: origX, y: origY });
+                updateBattlemapTokens();
+            }
+        };
+
+        tokenEl.addEventListener('mousedown', onStart);
+        tokenEl.addEventListener('touchstart', onStart, { passive: false });
     }
     window.updateBattlemapTokens = updateBattlemapTokens;
 
