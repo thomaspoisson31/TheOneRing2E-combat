@@ -496,9 +496,6 @@ function associatePlayer(instanceId, playerName) {
         creaturePlayerAssociations.set(instanceId, new Set());
     }
     creaturePlayerAssociations.get(instanceId).add(playerName);
-    if (window.customTokenPositions) {
-        window.customTokenPositions.delete(`adversary_${instanceId}`);
-    }
     updateAssociatedPlayersList(instanceId);
     if (typeof updateRandomAssociationButtonVisibility === 'function') {
         updateRandomAssociationButtonVisibility();
@@ -508,9 +505,6 @@ function associatePlayer(instanceId, playerName) {
 function dissociatePlayer(instanceId, playerName) {
     if (creaturePlayerAssociations.has(instanceId)) {
         creaturePlayerAssociations.get(instanceId).delete(playerName);
-        if (window.customTokenPositions) {
-            window.customTokenPositions.delete(`adversary_${instanceId}`);
-        }
         updateAssociatedPlayersList(instanceId);
     }
     if (typeof updateRandomAssociationButtonVisibility === 'function') {
