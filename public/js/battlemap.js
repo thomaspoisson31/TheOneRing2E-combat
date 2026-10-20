@@ -11,21 +11,21 @@
     // Center coordinates for posture zones in original 4096x3385 space
     const POSTURE_CENTERS = {
         // Posture 1: AVANCE
-        1: { x: 2048, y: 1475 },
+        1: { x: 2048, y: 1600 },
         // Posture 0: EXPOSE / EXPOSEE
-        0: { x: 2048, y: 1600 },
+        0: { x: 2048, y: 2000 },
         // Posture 3: DEFENSIF / DEFENSIVE
-        3: { x: 2048, y: 1950 },
+        3: { x: 2048, y: 2500 },
         // Posture 2: ARRIERE
-        2: { x: 2048, y: 2800 }
+        2: { x: 2048, y: 2750 }
     };
 
     // Arc radius and span angle settings per posture to keep tokens well distributed & inside polygons
     const ARC_SETTINGS = {
-        1: { radiusX: 520, radiusY: 170, startAngle: -150, endAngle: -30 }, // AVANCE
-        0: { radiusX: 680, radiusY: 220, startAngle: -150, endAngle: -30 }, // EXPOSE
-        3: { radiusX: 1050, radiusY: 340, startAngle: -150, endAngle: -30 }, // DEFENSIF
-        2: { radiusX: 1100, radiusY: 200, startAngle: 30, endAngle: 150 }   // ARRIERE
+        1: { radiusX: 450, radiusY: 130, startAngle: -150, endAngle: -30 }, // AVANCE
+        0: { radiusX: 600, radiusY: 150, startAngle: -150, endAngle: -30 }, // EXPOSE
+        3: { radiusX: 900, radiusY: 200, startAngle: -150, endAngle: -30 }, // DEFENSIF
+        2: { radiusX: 1000, radiusY: 150, startAngle: 30, endAngle: 150 }   // ARRIERE
     };
 
     /**
@@ -109,6 +109,11 @@
     window.customTokenPositions = customTokenPositions;
 
     function initBattlemapWindow() {
+        // On battlemap load, clear any previous drag positions so tokens start in their posture zone
+        if (window.customTokenPositions) {
+            window.customTokenPositions.clear();
+        }
+
         const battlemapWin = document.getElementById('battlemapWindow');
         const header = battlemapWin ? battlemapWin.querySelector('.battlemap-window-header') : null;
         const img = document.getElementById('battlemapImg');
@@ -409,8 +414,9 @@
                     origX = customPos.x;
                     origY = customPos.y;
                 } else {
+                    // Position adversary token directly below hero token with 10px overlap (44px token height - 34px vertical offset = 10px overlap)
                     const advScreenX = count === 1 ? heroScreenX : startX + idx * stepX;
-                    const advScreenY = heroScreenY + 34; // 34px under hero center (10px overlap on 44px hero token)
+                    const advScreenY = heroScreenY + 34;
                     origX = advScreenX / scaleX;
                     origY = advScreenY / scaleY;
                 }
