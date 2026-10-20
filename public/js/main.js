@@ -313,6 +313,12 @@ window.calculateInitiative = calculateInitiative;
 function validateEngagement() {
     const orderedFighters = calculateInitiative();
     const uniqueFighters = buildFighterTabs(orderedFighters);
+
+    const battlemapTab = document.getElementById('battlemapTab');
+    if (battlemapTab) {
+        battlemapTab.style.display = '';
+    }
+
     if (uniqueFighters && uniqueFighters.length > 0) {
         selectFighterTab(uniqueFighters[0]);
     } else {
