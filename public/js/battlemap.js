@@ -411,7 +411,7 @@
 
             advList.forEach((adv, idx) => {
                 const advCenterX = startCenterX + idx * pitch;
-                renderAdversaryToken(adv, advCenterX, advCenterY, overlay);
+                renderAdversaryToken(adv, advCenterX, advCenterY, overlay, pIdx);
             });
         });
     }
@@ -419,7 +419,7 @@
     /**
      * Renders a single adversary token on the battlemap overlay
      */
-    function renderAdversaryToken(adv, screenX, screenY, overlay) {
+    function renderAdversaryToken(adv, screenX, screenY, overlay, heroId) {
         const tokenEl = document.createElement('div');
         tokenEl.className = 'battlemap-token adversary-token';
         if (adv.isSecondary) {
@@ -427,6 +427,7 @@
         }
         tokenEl.dataset.tokenType = 'adversary';
         tokenEl.dataset.tokenId = adv.instanceId;
+        tokenEl.dataset.heroId = heroId;
         tokenEl.title = adv.name + (adv.isSecondary ? ' (Dupliqué)' : '');
         tokenEl.style.left = `${screenX}px`;
         tokenEl.style.top = `${screenY}px`;
@@ -516,7 +517,25 @@
                 const heroName = heroWrapper ? heroWrapper.dataset.playerName : '';
                 tokenEl.title = `${heroName} (${window.getPostureText ? window.getPostureText(newPosture) : ''})`;
 
-                updateBattlemapTokens();
+                // Update associated adversary tokens in real-time during hero token drag
+                const overlay = document.getElementById('battlemapTokensOverlay');
+                if (overlay) {
+                    const advTokens = overlay.querySelectorAll(`.adversary-token[data-hero-id="${id}"]`);
+                    if (advTokens.length > 0) {
+                        const count = advTokens.length;
+                        const advWidth = 40;
+                        const gap = 5;
+                        const pitch = advWidth + gap;
+                        const totalGroupWidth = count * advWidth + (count - 1) * gap;
+                        const startCenterX = currentX - (totalGroupWidth / 2) + (advWidth / 2);
+                        const advCenterY = currentY + 47;
+
+                        advTokens.forEach((advToken, idx) => {
+                            advToken.style.left = `${startCenterX + idx * pitch}px`;
+                            advToken.style.top = `${advCenterY}px`;
+                        });
+                    }
+                }
             }
         };
 
