@@ -233,6 +233,7 @@
     pointer-events: auto;
     transition: left 0.3s ease, top 0.3s ease;
     cursor: pointer;
+    z-index: 2;
 }
 
 .battlemap-token:hover {
@@ -253,13 +254,33 @@
     font-size: 16px;
 }
 
+/* Border colors for hero combat postures */
+.battlemap-token.posture-1 {
+    border: 3px solid #10b981; /* AVANCE (+1D) - Green */
+}
+
+.battlemap-token.posture-0 {
+    border: 3px solid #ef4444; /* EXPOSE - Red */
+}
+
+.battlemap-token.posture-3 {
+    border: 3px solid #3b82f6; /* DEFENSIF (-1D) - Blue */
+}
+
+.battlemap-token.posture-2 {
+    border: 3px solid #f59e0b; /* ARRIERE - Amber */
+}
+
 .battlemap-token.adversary-token {
     border: 2px solid var(--title-color, #b30f04);
     background-color: #2b0000;
+    border-radius: 6px;
+    z-index: 1;
 }
 
 .battlemap-token.adversary-token:hover {
     border-color: #ff4d4d;
+    z-index: 10;
 }
 
 .battlemap-token .adversary-token-name {
