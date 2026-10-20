@@ -276,6 +276,12 @@
     background-color: #2b0000;
     border-radius: 6px;
     z-index: 1;
+    cursor: default;
+}
+
+.battlemap-token.adversary-token.secondary-token {
+    opacity: 0.5;
+    filter: grayscale(80%);
 }
 
 .battlemap-token.adversary-token:hover {
