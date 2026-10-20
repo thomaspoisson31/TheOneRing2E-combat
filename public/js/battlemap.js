@@ -407,21 +407,19 @@
             const startX = heroScreenX - totalWidth / 2;
 
             advList.forEach((adv, idx) => {
-                let origX, origY;
+                let advScreenX, advScreenY;
 
                 if (customTokenPositions.has(`adversary_${adv.instanceId}`)) {
                     const customPos = customTokenPositions.get(`adversary_${adv.instanceId}`);
-                    origX = customPos.x;
-                    origY = customPos.y;
+                    advScreenX = customPos.x * scaleX;
+                    advScreenY = customPos.y * scaleY;
                 } else {
-                    // Position adversary token directly below hero token with 10px overlap (44px token height - 34px vertical offset = 10px overlap)
-                    const advScreenX = count === 1 ? heroScreenX : startX + idx * stepX;
-                    const advScreenY = heroScreenY + 34;
-                    origX = advScreenX / scaleX;
-                    origY = advScreenY / scaleY;
+                    // Position adversary token directly below hero token with constant 34px vertical offset (10px overlap)
+                    advScreenX = count === 1 ? heroScreenX : startX + idx * stepX;
+                    advScreenY = heroScreenY + 34;
                 }
 
-                renderAdversaryToken(adv, origX, origY, scaleX, scaleY, overlay);
+                renderAdversaryToken(adv, advScreenX, advScreenY, overlay);
             });
         });
 
@@ -452,20 +450,18 @@
             const startX = centroidScreenX - totalWidth / 2;
 
             advList.forEach((adv, idx) => {
-                let origX, origY;
+                let advScreenX, advScreenY;
 
                 if (customTokenPositions.has(`adversary_${adv.instanceId}`)) {
                     const customPos = customTokenPositions.get(`adversary_${adv.instanceId}`);
-                    origX = customPos.x;
-                    origY = customPos.y;
+                    advScreenX = customPos.x * scaleX;
+                    advScreenY = customPos.y * scaleY;
                 } else {
-                    const advScreenX = count === 1 ? centroidScreenX : startX + idx * stepX;
-                    const advScreenY = centroidScreenY + 34;
-                    origX = advScreenX / scaleX;
-                    origY = advScreenY / scaleY;
+                    advScreenX = count === 1 ? centroidScreenX : startX + idx * stepX;
+                    advScreenY = centroidScreenY + 34;
                 }
 
-                renderAdversaryToken(adv, origX, origY, scaleX, scaleY, overlay);
+                renderAdversaryToken(adv, advScreenX, advScreenY, overlay);
             });
         });
     }
@@ -509,10 +505,7 @@
         });
     }
 
-    function renderAdversaryToken(adv, origX, origY, scaleX, scaleY, overlay) {
-        const screenX = origX * scaleX;
-        const screenY = origY * scaleY;
-
+    function renderAdversaryToken(adv, screenX, screenY, overlay) {
         const tokenEl = document.createElement('div');
         tokenEl.className = 'battlemap-token adversary-token';
         tokenEl.dataset.tokenType = 'adversary';
@@ -561,6 +554,13 @@
 
             tokenStartX = parseFloat(tokenEl.style.left) || initialScreenX;
             tokenStartY = parseFloat(tokenEl.style.top) || initialScreenY;
+
+            if (type === 'pj') {
+                const heroEngagedAdversaries = getEngagedAdversariesForHero(id);
+                heroEngagedAdversaries.forEach(adv => {
+                    customTokenPositions.delete(`adversary_${adv.instanceId}`);
+                });
+            }
 
             tokenEl.style.transition = 'none';
 
@@ -657,6 +657,10 @@
 
             if (type === 'pj') {
                 customTokenPositions.set(`pj_${id}`, { x: origX, y: origY });
+                const heroEngagedAdversaries = getEngagedAdversariesForHero(id);
+                heroEngagedAdversaries.forEach(adv => {
+                    customTokenPositions.delete(`adversary_${adv.instanceId}`);
+                });
                 const newPosture = getPostureFromCoords(origX, origY);
                 if (window.playerAdvantages) {
                     window.playerAdvantages.set(Number(id), newPosture);
