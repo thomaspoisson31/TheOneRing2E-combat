@@ -464,23 +464,23 @@
 }
 
 .advantage-indicator.posture-expose {
-    background-color: #4a4a4a;
+    background-color: #eab308;
     color: #ffffff;
 }
 
 .advantage-indicator.posture-avance {
-    background-color: #000000;
+    background-color: #f97316;
     color: #ffffff;
 }
 
 .advantage-indicator.posture-arriere {
-    background-color: #888888;
+    background-color: #3b82f6;
     color: #ffffff;
 }
 
 .advantage-indicator.posture-defensif {
-    background-color: #d0d0d0;
-    color: #000000;
+    background-color: #22c55e;
+    color: #ffffff;
 }
 
 /* Quand la créature est associée à un PJ */
