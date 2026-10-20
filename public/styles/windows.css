@@ -272,6 +272,9 @@
 }
 
 .battlemap-token.adversary-token {
+    position: absolute;
+    width: 40px;
+    height: 40px;
     border: 2px solid var(--title-color, #b30f04);
     background-color: #2b0000;
     border-radius: 6px;
