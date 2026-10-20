@@ -484,37 +484,46 @@
      */
     function makeTokenDraggable(tokenEl, type, id, initialScreenX, initialScreenY) {
         let isDragging = false;
+        let activePointerId = null;
         let startX = 0, startY = 0;
         let tokenStartX = initialScreenX, tokenStartY = initialScreenY;
 
+        tokenEl.style.touchAction = 'none';
+        tokenEl.addEventListener('dragstart', (e) => e.preventDefault());
+
         const onStart = (e) => {
+            if (e.button !== undefined && e.button !== 0) return;
             e.stopPropagation(); // prevent window dragging
+
             isDragging = true;
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            startX = clientX;
-            startY = clientY;
+            activePointerId = e.pointerId;
+
+            try {
+                tokenEl.setPointerCapture(e.pointerId);
+            } catch (err) {
+                // Ignore if pointer capture fails
+            }
+
+            startX = e.clientX;
+            startY = e.clientY;
 
             tokenStartX = parseFloat(tokenEl.style.left) || initialScreenX;
             tokenStartY = parseFloat(tokenEl.style.top) || initialScreenY;
 
             tokenEl.style.transition = 'none';
 
-            document.addEventListener('mousemove', onMove);
-            document.addEventListener('touchmove', onMove, { passive: false });
-            document.addEventListener('mouseup', onEnd);
-            document.addEventListener('touchend', onEnd);
+            tokenEl.addEventListener('pointermove', onMove);
+            tokenEl.addEventListener('pointerup', onEnd);
+            tokenEl.addEventListener('pointercancel', onEnd);
+            window.addEventListener('blur', onBlur);
         };
 
         const onMove = (e) => {
             if (!isDragging) return;
             if (e.cancelable) e.preventDefault();
 
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-            const deltaX = clientX - startX;
-            const deltaY = clientY - startY;
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
 
             let currentX = tokenStartX + deltaX;
             let currentY = tokenStartY + deltaY;
@@ -533,11 +542,26 @@
             if (!isDragging) return;
             isDragging = false;
 
-            document.removeEventListener('mousemove', onMove);
-            document.removeEventListener('touchmove', onMove);
-            document.removeEventListener('mouseup', onEnd);
-            document.removeEventListener('touchend', onEnd);
+            const pointerId = (e && e.pointerId !== undefined) ? e.pointerId : activePointerId;
 
+            if (pointerId !== null) {
+                try {
+                    if (tokenEl.hasPointerCapture && tokenEl.hasPointerCapture(pointerId)) {
+                        tokenEl.releasePointerCapture(pointerId);
+                    } else {
+                        tokenEl.releasePointerCapture(pointerId);
+                    }
+                } catch (err) {
+                    // Ignore error if capture was already released
+                }
+            }
+
+            tokenEl.removeEventListener('pointermove', onMove);
+            tokenEl.removeEventListener('pointerup', onEnd);
+            tokenEl.removeEventListener('pointercancel', onEnd);
+            window.removeEventListener('blur', onBlur);
+
+            activePointerId = null;
             tokenEl.style.transition = '';
 
             const img = document.getElementById('battlemapImg');
@@ -592,8 +616,13 @@
             }
         };
 
-        tokenEl.addEventListener('mousedown', onStart);
-        tokenEl.addEventListener('touchstart', onStart, { passive: false });
+        const onBlur = () => {
+            if (isDragging) {
+                onEnd();
+            }
+        };
+
+        tokenEl.addEventListener('pointerdown', onStart);
     }
     window.updateBattlemapTokens = updateBattlemapTokens;
 
