@@ -258,17 +258,29 @@ function updateAssociatedPlayersList(instanceId) {
 function updateInstanceValue(instanceId, field, value) {
     const instance = creatureInstances.get(instanceId);
     if (instance) {
-        const attributs = instance.getElementsByTagName('attributs')[0];
-        const element = attributs.getElementsByTagName(field)[0];
-        if (element) {
-            element.textContent = value;
+        let attributs = instance.getElementsByTagName('attributs')[0] || instance.getElementsByTagName('stats')[0];
+        if (attributs) {
+            let element = attributs.getElementsByTagName(field)[0];
+            if (!element && (field === 'haine' || field === 'determination')) {
+                element = attributs.getElementsByTagName('haine')[0] || attributs.getElementsByTagName('determination')[0];
+            }
+            if (!element) {
+                element = instance.ownerDocument.createElement(field);
+                attributs.appendChild(element);
+            }
+            if (element) {
+                element.textContent = value;
+            }
         }
     }
 }
 
 function adjustCreatureStat(instanceId, field, delta) {
-    const inputId = `creature-${field}-${instanceId}`;
-    const input = document.getElementById(inputId);
+    let inputId = `creature-${field}-${instanceId}`;
+    let input = document.getElementById(inputId);
+    if (!input && (field === 'haine' || field === 'determination')) {
+        input = document.getElementById(`creature-haine-${instanceId}`) || document.getElementById(`creature-determination-${instanceId}`);
+    }
     if (input) {
         const currentValue = parseInt(input.value) || 0;
         const newValue = currentValue + delta;
@@ -324,7 +336,7 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
         creature = window.creatureInstances.get(instanceId);
     }
 
-    const name = creature.getElementsByTagName('nom')[0].textContent;
+    const name = creature.getElementsByTagName('nom')[0]?.textContent || 'Créature';
     const imageUrl = typeof getAdversaryImagePath === 'function' ? getAdversaryImagePath(name) : '';
 
     const currentAdvantage = creatureInstanceAdvantages.get(instanceId) || 0;
@@ -354,9 +366,19 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
         </div>`;
 
     // Attributs
-    const attributs = creature.getElementsByTagName('attributs')[0];
-    const endurance = attributs.getElementsByTagName('endurance')[0].textContent;
-    const haine = attributs.getElementsByTagName('haine')[0].textContent;
+    const attributs = creature.getElementsByTagName('attributs')[0] || creature.getElementsByTagName('stats')[0];
+    const endurance = attributs?.getElementsByTagName('endurance')[0]?.textContent || '0';
+
+    // Haine or Détermination
+    const determinationEl = attributs?.getElementsByTagName('determination')[0];
+    const haineEl = attributs?.getElementsByTagName('haine')[0];
+    const haineValue = haineEl?.textContent || determinationEl?.textContent || '0';
+    const haineLabel = determinationEl ? 'Détermination' : 'Haine';
+    const haineField = determinationEl ? 'determination' : 'haine';
+
+    const niveau = attributs?.getElementsByTagName('niveau')[0]?.textContent || attributs?.getElementsByTagName('niveau_attribut')[0]?.textContent || '0';
+    const parade = attributs?.getElementsByTagName('parade')[0]?.textContent || '-';
+    const armure = attributs?.getElementsByTagName('armure')[0]?.textContent || '0';
 
     // Stats
     html += '<div class="stats-grid">';
@@ -367,25 +389,25 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
         <div class="stat-diamond">
             <img src="images/diamond.png" alt="diamond">
             <div class="stat-label">Niveau</div>
-            <div class="stat-value">${attributs.getElementsByTagName('niveau')[0].textContent}</div>
+            <div class="stat-value">${niveau}</div>
         </div>`;
     
     html += `
         <div class="stat-diamond">
             <img src="images/diamond.png" alt="diamond">
             <div class="stat-label">Parade</div>
-            <div class="stat-value">${attributs.getElementsByTagName('parade')[0].textContent}</div>
+            <div class="stat-value">${parade}</div>
         </div>`;
     
     html += `
         <div class="stat-diamond">
             <img src="images/diamond.png" alt="diamond">
             <div class="stat-label">Armure</div>
-            <div class="stat-value">${attributs.getElementsByTagName('armure')[0].textContent}</div>
+            <div class="stat-value">${armure}</div>
         </div>`;
     html += '</div>';
 
-    // Ligne 2: Endurance, Haine
+    // Ligne 2: Endurance, Haine / Détermination
     html += '<div class="stats-row stats-row-bottom">';
     html += `
         <div class="stat-wrapper">
@@ -405,18 +427,18 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
     
     html += `
         <div class="stat-wrapper">
-            <button class="stat-btn" onclick="adjustCreatureStat(${instanceId}, 'haine', -1)">-</button>
+            <button class="stat-btn" onclick="adjustCreatureStat(${instanceId}, '${haineField}', -1)">-</button>
             <div class="stat-diamond">
                 <img src="images/diamond.png" alt="diamond">
-                <div class="stat-label">Haine</div>
+                <div class="stat-label">${haineLabel}</div>
                 <input type="number" 
-                    value="${haine}" 
+                    value="${haineValue}"
                     class="stat-input"
-                    id="creature-haine-${instanceId}"
-                    oninput="updateInstanceValue(${instanceId}, 'haine', this.value)"
-                    onchange="updateInstanceValue(${instanceId}, 'haine', this.value)">
+                    id="creature-${haineField}-${instanceId}"
+                    oninput="updateInstanceValue(${instanceId}, '${haineField}', this.value)"
+                    onchange="updateInstanceValue(${instanceId}, '${haineField}', this.value)">
             </div>
-            <button class="stat-btn" onclick="adjustCreatureStat(${instanceId}, 'haine', 1)">+</button>
+            <button class="stat-btn" onclick="adjustCreatureStat(${instanceId}, '${haineField}', 1)">+</button>
         </div>`;
     html += '</div>';
     
@@ -427,9 +449,10 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
 
     // Compétences de combat
     const competences = creature.getElementsByTagName('competences_combat')[0];
-    const puissance = attributs.getElementsByTagName('puissance')[0].textContent;
+    const puissance = attributs?.getElementsByTagName('puissance')[0]?.textContent || '1';
     
-    if (competences.getElementsByTagName('arme').length > 0) {
+    const weapons = competences ? Array.from(competences.getElementsByTagName('arme')) : [];
+    if (weapons.length > 0) {
         html += '<div class="combat-skills">';
         html += '<div class="combat-header">';
         html += '<h3>Combat</h3>';
@@ -438,13 +461,15 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
         }
         html += '</div><ul>';
         
-        for (let arme of competences.getElementsByTagName('arme')) {
+        for (let arme of weapons) {
             const nomArme = arme.getElementsByTagName('nom_arme')[0]?.textContent || '';
             const valeurArme = parseInt(arme.getElementsByTagName('valeur_arme')[0]?.textContent || '0');
             const degatsArme = arme.getElementsByTagName('degats_arme')[0]?.textContent || '';
             const specialArme = arme.getElementsByTagName('special_arme')[0]?.textContent || '';
+            const noteArme = arme.getElementsByTagName('note_arme')[0]?.textContent || '';
 
             const diamonds = '&#9830;'.repeat(valeurArme);
+            const specialDetailText = specialDescriptions[specialArme] || noteArme || '';
 
             html += `<li>
                 <div class="weapon-line1">
@@ -454,7 +479,7 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
                 <div class="weapon-line2">
                     <span class="weapon-degats">(${degatsArme})</span>
                     ${specialArme ? `<span class="weapon-special" onclick="toggleSpecialDetails(this)">${specialArme}</span>
-                    <div class="weapon-special-details">${specialDescriptions[specialArme] || ''}</div>` : ''}
+                    <div class="weapon-special-details">${specialDetailText}</div>` : ''}
                 </div>
             </li>`;
         }
@@ -462,16 +487,18 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
     }
 
     // Capacités
-    const creatureCapacites = creature.getElementsByTagName('capacites')[0];
+    const creatureCapacites = creature.getElementsByTagName('capacites')[0] || creature.getElementsByTagName('capacites_redoutables')[0];
     const familyCapacites = getFamilyCapacities(familyName);
     
-    if ((creatureCapacites?.getElementsByTagName('capacite').length > 0) || familyCapacites.length > 0) {
+    const creatureCapList = creatureCapacites ? Array.from(creatureCapacites.getElementsByTagName('capacite')) : [];
+
+    if (creatureCapList.length > 0 || familyCapacites.length > 0) {
         html += '<div class="capacites"><h3>Capacités</h3>';
         
-        if (creatureCapacites) {
-            for (let capacite of creatureCapacites.getElementsByTagName('capacite')) {
-                const titre = capacite.getElementsByTagName('Titre_Capacite')[0].textContent;
-                const details = capacite.getElementsByTagName('Detail_Capacite')[0].textContent;
+        for (let capacite of creatureCapList) {
+            const titre = capacite.getElementsByTagName('Titre_Capacite')[0]?.textContent || capacite.getAttribute('nom') || '';
+            const details = capacite.getElementsByTagName('Detail_Capacite')[0]?.textContent || capacite.textContent || '';
+            if (titre || details) {
                 html += `
                     <div class="capacite-item" onclick="toggleDetails(this)">
                         <strong>${titre}</strong>
@@ -481,14 +508,16 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
         }
         
         for (let capacite of familyCapacites) {
-            const titre = capacite.getElementsByTagName('Titre_Capacite')[0].textContent;
-            const details = capacite.getElementsByTagName('Detail_Capacite')[0].textContent;
-            html += `
-                <div class="capacite-item" onclick="toggleDetails(this)">
-                    <strong>${titre}</strong>
-                    <div class="details">${details}</div>
-                </div>`;
+            const titre = capacite.getElementsByTagName('Titre_Capacite')[0]?.textContent || capacite.getAttribute('nom') || '';
+            const details = capacite.getElementsByTagName('Detail_Capacite')[0]?.textContent || capacite.textContent || '';
+            if (titre || details) {
+                html += `
+                    <div class="capacite-item" onclick="toggleDetails(this)">
+                        <strong>${titre}</strong>
+                        <div class="details">${details}</div>
+                    </div>`;
             }
+        }
         
         html += '</div>';
     }

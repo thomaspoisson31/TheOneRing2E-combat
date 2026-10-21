@@ -226,7 +226,7 @@ function getAssociatedCreatures(playerName) {
                 const parade = instance.getElementsByTagName('parade')[0]?.textContent || '-';
                 associatedCreatures.push({
                     id: instanceId,
-                    name: instance.getElementsByTagName('nom')[0].textContent,
+                    name: instance.getElementsByTagName('nom')[0]?.textContent || 'Créature',
                     familyName: tab.dataset.familyName,
                     parade: parade
                 });
