@@ -27,7 +27,7 @@ function renderAdversariesList() {
         tilesContainer.className = 'adversary-tiles-container';
 
         // Récupérer et trier les créatures de cette famille
-        const creatures = Array.from(famille.getElementsByTagName('creature'));
+        const creatures = Array.from(famille.querySelectorAll('creature, adversaire'));
         creatures.sort((a, b) => {
             const nameA = a.getElementsByTagName('nom')[0]?.textContent || "";
             const nameB = b.getElementsByTagName('nom')[0]?.textContent || "";
