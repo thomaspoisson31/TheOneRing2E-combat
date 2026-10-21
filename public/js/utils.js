@@ -122,7 +122,62 @@ function saveCurrentCardInputs() {
     });
 }
 
+function prepareCardContainerForStage1() {
+    const engagementView = document.getElementById('engagementView');
+    if (engagementView && engagementView.style.display !== 'none') {
+        const adversariesPanel = document.getElementById('adversariesPanel');
+        const creatureCard = document.getElementById('creatureCard');
+        if (adversariesPanel && creatureCard) {
+            if (creatureCard.parentNode !== adversariesPanel) {
+                adversariesPanel.appendChild(creatureCard);
+            }
+            const header = adversariesPanel.querySelector('.adversaries-header');
+            const list = adversariesPanel.querySelector('.adversaries-list-container');
+            if (header) header.style.display = 'none';
+            if (list) list.style.display = 'none';
+            creatureCard.style.display = 'block';
+        }
+    }
+}
+
+function prepareCardContainerForStage2() {
+    const fighterCardContainer = document.querySelector('.fighter-card-container');
+    const creatureCard = document.getElementById('creatureCard');
+    const adversariesPanel = document.getElementById('adversariesPanel');
+    if (adversariesPanel) {
+        const header = adversariesPanel.querySelector('.adversaries-header');
+        const list = adversariesPanel.querySelector('.adversaries-list-container');
+        if (header) header.style.display = '';
+        if (list) list.style.display = '';
+    }
+    if (fighterCardContainer && creatureCard && creatureCard.parentNode !== fighterCardContainer) {
+        fighterCardContainer.appendChild(creatureCard);
+    }
+}
+
+function closeStage1Card() {
+    if (typeof saveCurrentCardInputs === 'function') {
+        saveCurrentCardInputs();
+    }
+    const creatureCard = document.getElementById('creatureCard');
+    if (creatureCard) {
+        creatureCard.style.display = 'none';
+        delete creatureCard.dataset.instanceId;
+    }
+    const adversariesPanel = document.getElementById('adversariesPanel');
+    if (adversariesPanel) {
+        const header = adversariesPanel.querySelector('.adversaries-header');
+        const list = adversariesPanel.querySelector('.adversaries-list-container');
+        if (header) header.style.display = '';
+        if (list) list.style.display = '';
+    }
+    document.querySelectorAll('.player-tab, .creature-tab').forEach(tab => tab.classList.remove('active'));
+}
+
 window.getNextPostureState = getNextPostureState;
 window.updatePostureElementStyle = updatePostureElementStyle;
 window.saveCurrentCardInputs = saveCurrentCardInputs;
 window.getAdversaryImagePath = getAdversaryImagePath;
+window.prepareCardContainerForStage1 = prepareCardContainerForStage1;
+window.prepareCardContainerForStage2 = prepareCardContainerForStage2;
+window.closeStage1Card = closeStage1Card;
