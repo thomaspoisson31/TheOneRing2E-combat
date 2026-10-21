@@ -51,7 +51,7 @@
      * @returns {Array<{posture: number, vertices: Array<Array<number>>}>}
      */
     function getPolygonZones() {
-        const mapAreaList = document.querySelectorAll('map[name="image-map"] area');
+        const mapAreaList = document.querySelectorAll('map area');
         const postureMap = {
             'AVANCE': 1,
             'EXPOSEE': 0,
@@ -109,42 +109,49 @@
     window.customTokenPositions = customTokenPositions;
 
     function initBattlemapWindow() {
-        // On battlemap load, clear any previous drag positions so tokens start in their posture zone
+        // Clear any previous drag positions on initial load
         if (window.customTokenPositions) {
             window.customTokenPositions.clear();
         }
 
         const battlemapWin = document.getElementById('battlemapWindow');
         const header = battlemapWin ? battlemapWin.querySelector('.battlemap-window-header') : null;
-        const img = document.getElementById('battlemapImg');
 
-        if (!battlemapWin || !header) return;
+        if (battlemapWin && header) {
+            // Make window draggable via header
+            header.addEventListener('mousedown', startWinDrag);
+            header.addEventListener('touchstart', startWinDrag, { passive: false });
+        }
 
-        // Make window draggable via header
-        header.addEventListener('mousedown', startWinDrag);
-        header.addEventListener('touchstart', startWinDrag, { passive: false });
-
-        // Update token positions on window resize or image load
+        // Update token positions on window resize or battlemap image load
         window.addEventListener('resize', updateBattlemapTokens);
-        if (img) {
+
+        document.querySelectorAll('.battlemap-image').forEach(img => {
             img.addEventListener('load', updateBattlemapTokens);
+        });
+
+        // ResizeObserver on all battlemap containers
+        if (typeof ResizeObserver !== 'undefined') {
+            const resizeObserver = new ResizeObserver(() => {
+                updateBattlemapTokens();
+            });
+            document.querySelectorAll('.battlemap-container').forEach(container => {
+                resizeObserver.observe(container);
+            });
         }
 
         // MutationObserver to update tokens when player advantages/postures change or players DOM reordered
         const observer = new MutationObserver(() => {
-            if (battlemapWin.style.display !== 'none') {
-                updateBattlemapTokens();
-            }
+            updateBattlemapTokens();
         });
 
-        const playerTabsContainer = document.querySelector('.player-tabs');
-        if (playerTabsContainer) {
-            observer.observe(playerTabsContainer, { childList: true, subtree: true, attributes: true });
+        const creatureTabs = document.getElementById('creatureTabs');
+        if (creatureTabs) {
+            observer.observe(creatureTabs, { childList: true, subtree: true, attributes: true });
         }
     }
 
     function startWinDrag(e) {
-        // Prevent drag when clicking close button
         if (e.target.classList.contains('close-button')) return;
 
         const battlemapWin = document.getElementById('battlemapWindow');
@@ -161,7 +168,6 @@
         initialWinLeft = rect.left;
         initialWinTop = rect.top;
 
-        // Switch to fixed position using left/top values for exact dragging
         battlemapWin.style.left = `${initialWinLeft}px`;
         battlemapWin.style.top = `${initialWinTop}px`;
         battlemapWin.style.transform = 'none';
@@ -188,7 +194,6 @@
         let newLeft = initialWinLeft + deltaX;
         let newTop = initialWinTop + deltaY;
 
-        // Keep inside viewport bounds
         const maxLeft = window.innerWidth - battlemapWin.offsetWidth;
         const maxTop = window.innerHeight - battlemapWin.offsetHeight;
 
@@ -215,7 +220,6 @@
         if (battlemapWin.style.display === 'none' || battlemapWin.style.display === '') {
             battlemapWin.style.display = 'flex';
             if (battlemapTab) battlemapTab.classList.add('active');
-            // Reset position centered if not moved yet
             if (!battlemapWin.style.left) {
                 battlemapWin.style.left = '50%';
                 battlemapWin.style.top = '50%';
@@ -240,28 +244,17 @@
     }
     window.closeBattlemapWindow = closeBattlemapWindow;
 
+    /**
+     * Updates tokens on all active/visible battlemap containers
+     */
     function updateBattlemapTokens() {
-        const overlay = document.getElementById('battlemapTokensOverlay');
-        const img = document.getElementById('battlemapImg');
-        if (!overlay || !img) return;
+        const containers = document.querySelectorAll('.battlemap-container');
+        if (containers.length === 0) return;
 
-        overlay.innerHTML = '';
-
-        const renderedWidth = img.clientWidth;
-        const renderedHeight = img.clientHeight;
-
-        if (renderedWidth === 0 || renderedHeight === 0) return;
-
-        const scaleX = renderedWidth / ORIGINAL_WIDTH;
-        const scaleY = renderedHeight / ORIGINAL_HEIGHT;
-
-        // Map to store calculated original position (4096x3385) for each playerIndex
-        const heroPositions = new Map();
-        const heroNamesMap = new Map();
-
-        // Group heroes by their posture
+        // Collect player wrappers and posture groups
         const playerWrappers = Array.from(document.querySelectorAll('.player-wrapper'));
         const postureGroups = { 0: [], 1: [], 2: [], 3: [] };
+        const heroNamesMap = new Map();
 
         playerWrappers.forEach((wrapper) => {
             const playerIndex = parseInt(wrapper.dataset.playerIndex);
@@ -288,7 +281,8 @@
             }
         });
 
-        // Place tokens for each posture group
+        // Compute original 4096x3385 positions for all heroes
+        const heroPositions = new Map();
         Object.keys(postureGroups).forEach((postureKey) => {
             const posture = parseInt(postureKey);
             const heroes = postureGroups[posture];
@@ -316,38 +310,10 @@
                 }
 
                 heroPositions.set(hero.playerIndex, { x: origX, y: origY });
-
-                const screenX = origX * scaleX;
-                const screenY = origY * scaleY;
-
-                const tokenEl = document.createElement('div');
-                tokenEl.className = `battlemap-token posture-${posture}`;
-                tokenEl.dataset.tokenType = 'pj';
-                tokenEl.dataset.tokenId = hero.playerIndex;
-                tokenEl.title = `${hero.name} (${window.getPostureText ? window.getPostureText(posture) : ''})`;
-                tokenEl.style.left = `${screenX}px`;
-                tokenEl.style.top = `${screenY}px`;
-
-                if (hero.token) {
-                    const imgEl = document.createElement('img');
-                    imgEl.src = `images/PJ/${hero.token}.png`;
-                    imgEl.alt = hero.name;
-                    tokenEl.appendChild(imgEl);
-                } else {
-                    const nameSpan = document.createElement('span');
-                    nameSpan.textContent = hero.name ? hero.name.substring(0, 2).toUpperCase() : '?';
-                    tokenEl.appendChild(nameSpan);
-                }
-
-                // Enable token drag for PJ
-                makeTokenDraggable(tokenEl, 'pj', hero.playerIndex, screenX, screenY);
-
-                overlay.appendChild(tokenEl);
             });
         });
 
-        // Group adversaries by engaged hero in player DOM order
-        // heroAdversariesMap: Map of heroPlayerIndex -> Array of { instanceId, name, isSecondary }
+        // Collect engaged adversaries per hero
         const heroAdversariesMap = new Map();
         playerWrappers.forEach(wrapper => {
             const pIdx = parseInt(wrapper.dataset.playerIndex);
@@ -360,7 +326,6 @@
                 const associatedSet = window.creaturePlayerAssociations ? window.creaturePlayerAssociations.get(instanceId) : null;
                 if (!associatedSet || associatedSet.size === 0) return;
 
-                // Find engaged heroes present on board in playerWrappers order
                 const engagedHeroIndices = [];
                 playerWrappers.forEach(wrapper => {
                     const pIdx = parseInt(wrapper.dataset.playerIndex);
@@ -371,7 +336,6 @@
                 });
 
                 if (engagedHeroIndices.length > 0) {
-                    // First engaged hero gets primary token, subsequent engaged heroes get duplicated secondary (grayed out) tokens
                     engagedHeroIndices.forEach((pIdx, idx) => {
                         const isSecondary = idx > 0;
                         const advList = heroAdversariesMap.get(pIdx);
@@ -387,31 +351,87 @@
             });
         }
 
-        // Render adversary tokens under each hero according to positioning rules:
-        // Top of adversary token is 5px below bottom of hero token.
-        // Hero token size: 44x44px. Since translate(-50%, -50%) centers the token at (heroScreenX, heroScreenY),
-        // bottom of hero token is heroScreenY + 22.
-        // Adversary token size: 40x40px (or 44x44px box). With translate(-50%, -50%), centering it vertically at heroScreenY + 47px
-        // places its top (heroScreenY + 47 - 20 = heroScreenY + 27px) exactly 5px below the hero token bottom (heroScreenY + 22px).
-        heroAdversariesMap.forEach((advList, pIdx) => {
-            const heroPos = heroPositions.get(pIdx);
-            if (!heroPos || advList.length === 0) return;
+        // Render on every visible battlemap container
+        containers.forEach(container => {
+            // Check visibility
+            const parentWin = container.closest('#battlemapWindow');
+            if (parentWin && (parentWin.style.display === 'none' || parentWin.style.display === '')) {
+                return;
+            }
+            if (container.offsetWidth === 0 || container.offsetHeight === 0) {
+                return;
+            }
 
-            const heroScreenX = heroPos.x * scaleX;
-            const heroScreenY = heroPos.y * scaleY;
-            const advCenterY = heroScreenY + 47; // top at heroScreenY + 27 (5px below hero bottom)
+            const img = container.querySelector('.battlemap-image');
+            const overlay = container.querySelector('.battlemap-tokens-overlay');
+            if (!img || !overlay) return;
 
-            const count = advList.length;
-            const advWidth = 40; // width of adversary token in px
-            const gap = 5; // distance between tokens in px
-            const pitch = advWidth + gap; // 45px center-to-center spacing
-            const totalGroupWidth = count * advWidth + (count - 1) * gap;
-            // Left edge of the first token relative to hero center:
-            const startCenterX = heroScreenX - (totalGroupWidth / 2) + (advWidth / 2);
+            overlay.innerHTML = '';
 
-            advList.forEach((adv, idx) => {
-                const advCenterX = startCenterX + idx * pitch;
-                renderAdversaryToken(adv, advCenterX, advCenterY, overlay, pIdx);
+            const renderedWidth = img.clientWidth;
+            const renderedHeight = img.clientHeight;
+            if (renderedWidth === 0 || renderedHeight === 0) return;
+
+            const scaleX = renderedWidth / ORIGINAL_WIDTH;
+            const scaleY = renderedHeight / ORIGINAL_HEIGHT;
+
+            // Render Hero Tokens
+            Object.keys(postureGroups).forEach((postureKey) => {
+                const posture = parseInt(postureKey);
+                const heroes = postureGroups[posture];
+
+                heroes.forEach((hero) => {
+                    const heroPos = heroPositions.get(hero.playerIndex);
+                    if (!heroPos) return;
+
+                    const screenX = heroPos.x * scaleX;
+                    const screenY = heroPos.y * scaleY;
+
+                    const tokenEl = document.createElement('div');
+                    tokenEl.className = `battlemap-token posture-${posture}`;
+                    tokenEl.dataset.tokenType = 'pj';
+                    tokenEl.dataset.tokenId = hero.playerIndex;
+                    tokenEl.title = `${hero.name} (${window.getPostureText ? window.getPostureText(posture) : ''})`;
+                    tokenEl.style.left = `${screenX}px`;
+                    tokenEl.style.top = `${screenY}px`;
+
+                    if (hero.token) {
+                        const imgEl = document.createElement('img');
+                        imgEl.src = `images/PJ/${hero.token}.png`;
+                        imgEl.alt = hero.name;
+                        tokenEl.appendChild(imgEl);
+                    } else {
+                        const nameSpan = document.createElement('span');
+                        nameSpan.textContent = hero.name ? hero.name.substring(0, 2).toUpperCase() : '?';
+                        tokenEl.appendChild(nameSpan);
+                    }
+
+                    makeTokenDraggable(tokenEl, 'pj', hero.playerIndex, screenX, screenY, container, img, overlay);
+
+                    overlay.appendChild(tokenEl);
+                });
+            });
+
+            // Render Adversary Tokens
+            heroAdversariesMap.forEach((advList, pIdx) => {
+                const heroPos = heroPositions.get(pIdx);
+                if (!heroPos || advList.length === 0) return;
+
+                const heroScreenX = heroPos.x * scaleX;
+                const heroScreenY = heroPos.y * scaleY;
+                const advCenterY = heroScreenY + 47;
+
+                const count = advList.length;
+                const advWidth = 40;
+                const gap = 5;
+                const pitch = advWidth + gap;
+                const totalGroupWidth = count * advWidth + (count - 1) * gap;
+                const startCenterX = heroScreenX - (totalGroupWidth / 2) + (advWidth / 2);
+
+                advList.forEach((adv, idx) => {
+                    const advCenterX = startCenterX + idx * pitch;
+                    renderAdversaryToken(adv, advCenterX, advCenterY, overlay, pIdx);
+                });
             });
         });
     }
@@ -443,7 +463,7 @@
     /**
      * Makes a battlemap token draggable across the image coordinate space
      */
-    function makeTokenDraggable(tokenEl, type, id, initialScreenX, initialScreenY) {
+    function makeTokenDraggable(tokenEl, type, id, initialScreenX, initialScreenY, container, img, overlay) {
         let isDragging = false;
         let activePointerId = null;
         let startX = 0, startY = 0;
@@ -454,7 +474,7 @@
 
         const onStart = (e) => {
             if (e.button !== undefined && e.button !== 0) return;
-            e.stopPropagation(); // prevent window dragging
+            e.stopPropagation();
 
             isDragging = true;
             activePointerId = e.pointerId;
@@ -489,7 +509,6 @@
             let currentX = tokenStartX + deltaX;
             let currentY = tokenStartY + deltaY;
 
-            const img = document.getElementById('battlemapImg');
             if (img) {
                 currentX = Math.max(0, Math.min(currentX, img.clientWidth));
                 currentY = Math.max(0, Math.min(currentY, img.clientHeight));
@@ -517,8 +536,15 @@
                 const heroName = heroWrapper ? heroWrapper.dataset.playerName : '';
                 tokenEl.title = `${heroName} (${window.getPostureText ? window.getPostureText(newPosture) : ''})`;
 
-                // Update associated adversary tokens in real-time during hero token drag
-                const overlay = document.getElementById('battlemapTokensOverlay');
+                // Update posture indicator in engagement cards immediately during drag
+                if (heroWrapper) {
+                    const indicator = heroWrapper.querySelector('.posture-advantage');
+                    if (indicator && typeof window.updatePostureElementStyle === 'function') {
+                        window.updatePostureElementStyle(indicator, newPosture);
+                    }
+                }
+
+                // Update associated adversary tokens on this overlay during hero token drag
                 if (overlay) {
                     const advTokens = overlay.querySelectorAll(`.adversary-token[data-hero-id="${id}"]`);
                     if (advTokens.length > 0) {
@@ -549,11 +575,9 @@
                 try {
                     if (tokenEl.hasPointerCapture && tokenEl.hasPointerCapture(pointerId)) {
                         tokenEl.releasePointerCapture(pointerId);
-                    } else {
-                        tokenEl.releasePointerCapture(pointerId);
                     }
                 } catch (err) {
-                    // Ignore error if capture was already released
+                    // Ignore
                 }
             }
 
@@ -565,7 +589,6 @@
             activePointerId = null;
             tokenEl.style.transition = '';
 
-            const img = document.getElementById('battlemapImg');
             if (!img || img.clientWidth === 0 || img.clientHeight === 0) return;
 
             const currentScreenX = parseFloat(tokenEl.style.left);
@@ -583,6 +606,7 @@
                 if (window.playerAdvantages) {
                     window.playerAdvantages.set(Number(id), newPosture);
                 }
+
                 // Update indicator elements and card views across the app
                 const wrapper = document.querySelector(`.player-wrapper[data-player-index="${id}"]`);
                 if (wrapper) {
@@ -591,7 +615,8 @@
                         window.updatePostureElementStyle(indicator, newPosture);
                     }
                 }
-                // Update card view if open
+
+                // Update hero card view if open
                 const numericId = Number(id);
                 if (window.playerInstances && (window.playerInstances.has(numericId) || window.playerInstances.has(id))) {
                     const playerInst = window.playerInstances.get(numericId) || window.playerInstances.get(id);
@@ -605,6 +630,7 @@
                         }
                     }
                 }
+
                 // Update creature card if open
                 const creatureCard = document.getElementById('creatureCard');
                 if (creatureCard && creatureCard.style.display !== 'none' && creatureCard.dataset.instanceId) {
@@ -613,6 +639,7 @@
                         window.updateAssociatedPlayersList(displayedInstanceId);
                     }
                 }
+
                 updateBattlemapTokens();
             }
         };
@@ -625,6 +652,7 @@
 
         tokenEl.addEventListener('pointerdown', onStart);
     }
+
     window.updateBattlemapTokens = updateBattlemapTokens;
 
     window.addEventListener('DOMContentLoaded', initBattlemapWindow);

@@ -930,5 +930,8 @@ function performRandomAssociation() {
     }
 
     updateRandomAssociationButtonVisibility();
+    if (typeof window.updateBattlemapTokens === 'function') {
+        window.updateBattlemapTokens();
+    }
 }
 window.performRandomAssociation = performRandomAssociation;

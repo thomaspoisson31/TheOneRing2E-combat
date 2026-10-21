@@ -168,6 +168,9 @@ function displayCreature(creature, familyName, resetSelect = true) {
     } else if (typeof updateRandomAssociationButtonVisibility === 'function') {
         updateRandomAssociationButtonVisibility();
     }
+    if (typeof window.updateBattlemapTokens === 'function') {
+        window.updateBattlemapTokens();
+    }
 }
 
 function loadPlayerCharacters() {
@@ -500,6 +503,9 @@ function associatePlayer(instanceId, playerName) {
     if (typeof updateRandomAssociationButtonVisibility === 'function') {
         updateRandomAssociationButtonVisibility();
     }
+    if (typeof window.updateBattlemapTokens === 'function') {
+        window.updateBattlemapTokens();
+    }
 }
 
 function dissociatePlayer(instanceId, playerName) {
@@ -509,6 +515,9 @@ function dissociatePlayer(instanceId, playerName) {
     }
     if (typeof updateRandomAssociationButtonVisibility === 'function') {
         updateRandomAssociationButtonVisibility();
+    }
+    if (typeof window.updateBattlemapTokens === 'function') {
+        window.updateBattlemapTokens();
     }
 }
 
@@ -522,6 +531,9 @@ function deleteCreature(instanceId) {
 
     if (typeof updateRandomAssociationButtonVisibility === 'function') {
         updateRandomAssociationButtonVisibility();
+    }
+    if (typeof window.updateBattlemapTokens === 'function') {
+        window.updateBattlemapTokens();
     }
 }
 
