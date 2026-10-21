@@ -33,7 +33,7 @@ function cycleInstanceAdvantage(instanceId) {
     }
 }
 
-function displayCreature(creature, familyName, resetSelect = true) {
+function displayCreature(creature, familyName, resetSelect = true, showDetails = true) {
     creatureCounter++;
     const instanceId = creatureCounter;
     
@@ -161,7 +161,9 @@ function displayCreature(creature, familyName, resetSelect = true) {
     if (targetContainer) {
         targetContainer.appendChild(tabElement);
     }
-    tabElement.click();
+    if (showDetails) {
+        tabElement.click();
+    }
 
     if (typeof performRandomAssociation === 'function') {
         performRandomAssociation();
