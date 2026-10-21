@@ -98,6 +98,7 @@
     window.getPostureFromCoords = getPostureFromCoords;
 
     let isWindowDragging = false;
+    let isTokenDragging = false;
     let dragStartX = 0;
     let dragStartY = 0;
     let initialWinLeft = 0;
@@ -142,7 +143,9 @@
 
         // MutationObserver to update tokens when player advantages/postures change or players DOM reordered
         const observer = new MutationObserver(() => {
-            updateBattlemapTokens();
+            if (!isTokenDragging) {
+                updateBattlemapTokens();
+            }
         });
 
         const creatureTabs = document.getElementById('creatureTabs');
@@ -477,6 +480,7 @@
             e.stopPropagation();
 
             isDragging = true;
+            isTokenDragging = true;
             activePointerId = e.pointerId;
 
             try {
@@ -568,6 +572,7 @@
         const onEnd = (e) => {
             if (!isDragging) return;
             isDragging = false;
+            isTokenDragging = false;
 
             const pointerId = (e && e.pointerId !== undefined) ? e.pointerId : activePointerId;
 
