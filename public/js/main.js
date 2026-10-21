@@ -760,14 +760,18 @@ function createPlayerTabs(pjDoc) {
             });
 
             tabElement.addEventListener('click', function() {
-                creatureSelect.value = '';
+                if (typeof creatureSelect !== 'undefined' && creatureSelect) {
+                    creatureSelect.value = '';
+                }
                 document.querySelectorAll('.player-tab, .creature-tab').forEach(tab => 
                     tab.classList.remove('active')
                 );
                 this.classList.add('active');
 
                 const playerInstance = player.cloneNode(true);
-                playerInstances.set(index, playerInstance);
+                if (window.playerInstances) {
+                    window.playerInstances.set(index, playerInstance);
+                }
                 displayPlayerProfile(playerInstance);
             });
             
