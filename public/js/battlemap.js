@@ -154,11 +154,14 @@
         }
     }
 
+    // Store saved window styles before fullscreen
+    let savedWindowStyles = null;
+
     function startWinDrag(e) {
-        if (e.target.classList.contains('close-button')) return;
+        if (e.target.closest('.close-button') || e.target.closest('.fullscreen-button')) return;
 
         const battlemapWin = document.getElementById('battlemapWindow');
-        if (!battlemapWin) return;
+        if (!battlemapWin || battlemapWin.classList.contains('fullscreen')) return;
 
         isWindowDragging = true;
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -246,6 +249,49 @@
         }
     }
     window.closeBattlemapWindow = closeBattlemapWindow;
+
+    /**
+     * Toggles fullscreen mode for the battlemap window
+     */
+    function toggleBattlemapFullscreen() {
+        const battlemapWin = document.getElementById('battlemapWindow');
+        const fsBtn = document.getElementById('battlemapFullscreenBtn');
+        if (!battlemapWin) return;
+
+        const isFullscreen = battlemapWin.classList.contains('fullscreen');
+
+        if (!isFullscreen) {
+            // Save non-fullscreen position and transform
+            savedWindowStyles = {
+                left: battlemapWin.style.left,
+                top: battlemapWin.style.top,
+                transform: battlemapWin.style.transform
+            };
+
+            battlemapWin.classList.add('fullscreen');
+            if (fsBtn) {
+                fsBtn.textContent = '🗗';
+                fsBtn.title = 'Réduire la fenêtre';
+            }
+        } else {
+            battlemapWin.classList.remove('fullscreen');
+
+            // Restore non-fullscreen position and transform
+            if (savedWindowStyles) {
+                battlemapWin.style.left = savedWindowStyles.left;
+                battlemapWin.style.top = savedWindowStyles.top;
+                battlemapWin.style.transform = savedWindowStyles.transform;
+            }
+
+            if (fsBtn) {
+                fsBtn.textContent = '⛶';
+                fsBtn.title = 'Plein écran';
+            }
+        }
+
+        updateBattlemapTokens();
+    }
+    window.toggleBattlemapFullscreen = toggleBattlemapFullscreen;
 
     /**
      * Updates tokens on all active/visible battlemap containers
