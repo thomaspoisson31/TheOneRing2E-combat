@@ -51,7 +51,7 @@ function renderAdversariesList() {
 
                 tile.addEventListener('click', () => {
                     if (typeof displayCreature === 'function') {
-                        displayCreature(creature, familyName);
+                        displayCreature(creature, familyName, true, false);
                     }
                 });
 
