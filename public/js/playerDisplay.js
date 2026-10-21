@@ -283,6 +283,10 @@ function cyclePlayerAdvantage(playerIndex, indicatorElement) {
             updateAssociatedPlayersList(displayedInstanceId);
         }
     }
+
+    if (typeof window.updateBattlemapTokens === 'function') {
+        window.updateBattlemapTokens();
+    }
 }
 
 function cycleHeroTopAdvantage(playerIndex, indicatorElement) {

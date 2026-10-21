@@ -35,6 +35,19 @@
         <div id="engagementView" class="engagement-view">
             <div class="engagement-layout">
                 <div class="engagement-left">
+                    <!-- Inline Battlemap -->
+                    <div id="inlineBattlemap" class="battlemap-container inline-battlemap">
+                        <img id="inlineBattlemapImg" src="images/LAU-Stance-Mat-Grass.jpg" alt="Battlemap" class="battlemap-image" usemap="#inline-image-map">
+                        <map name="inline-image-map">
+                            <area target="" alt="AVANCE" title="AVANCE" href="" coords="1513,1150,2057,1374,2578,1135,2703,1273,2732,1465,2549,1678,2122,1790,1719,1750,1422,1580,1375,1295" shape="poly">
+                            <area target="" alt="EXPOSEE" title="EXPOSEE" href="" coords="1205,1011,1516,1145,1364,1369,1502,1648,1875,1771,2200,1778,2526,1677,2692,1500,2700,1268,2577,1138,2873,1008,3094,1279,3156,1489,3025,1800,2707,2049,2186,2180,1683,2144,1267,1963,1013,1731,945,1366,1021,1178" shape="poly">
+                            <area target="" alt="DEFENSIVE" title="DEFENSIVE" href="" coords="880,866,1202,1007,959,1329,992,1691,1260,1962,1520,2096,2034,2172,2360,2150,2743,2013,2928,1875,3098,1648,3141,1412,3058,1199,2881,1000,3199,859,3510,1152,3655,1459,3666,1798,3445,2185,3051,2478,2479,2646,1972,2679,1469,2606,999,2440,681,2201,424,1769,442,1412,623,1105" shape="poly">
+                            <area target="" alt="ARRIERE" title="ARRIERE" href="" coords="413,1685,644,2231,1216,2549,1820,2687,2464,2680,3090,2474,3517,2162,3662,1707,4089,1714,4093,3381,15,3385,8,1699" shape="poly">
+                        </map>
+                        <div id="inlineBattlemapTokensOverlay" class="battlemap-tokens-overlay"></div>
+                        <button id="expandBattlemapBtn" class="battlemap-expand-btn" title="Agrandir la battlemap" onclick="toggleBattlemapWindow()">⛶</button>
+                    </div>
+
                     <div id="creatureTabs" class="creature-tabs player-columns-container"></div>
                 </div>
 
