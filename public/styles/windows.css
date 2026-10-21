@@ -254,7 +254,7 @@
 
 .battlemap-token {
     position: absolute;
-    transform: translate(-50%, -50%) perspective(300px) rotateX(10deg);
+    transform: translate(-50%, -50%) perspective(300px) rotateX(25deg);
     transform-style: preserve-3d;
     width: 44px;
     height: 44px;
@@ -273,7 +273,7 @@
 }
 
 .battlemap-token:hover {
-    transform: translate(-50%, -50%) perspective(300px) rotateX(10deg) scale(1.15);
+    transform: translate(-50%, -50%) perspective(300px) rotateX(25deg) scale(1.15);
     z-index: 10;
     border-color: #ffd700;
 }
@@ -341,4 +341,24 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     padding: 0 2px;
+}
+
+/* Redimensionnement des tokens dans la battlemap intégrée à la zone centrale (20% plus petits) */
+.inline-battlemap .battlemap-token {
+    width: 35.2px;
+    height: 35.2px;
+}
+
+.inline-battlemap .battlemap-token span {
+    font-size: 13px;
+}
+
+.inline-battlemap .battlemap-token.adversary-token {
+    width: 32px;
+    height: 32px;
+}
+
+.inline-battlemap .battlemap-token .adversary-token-name {
+    font-size: 8px;
+    max-height: 28px;
 }

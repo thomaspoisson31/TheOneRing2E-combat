@@ -394,7 +394,8 @@
                     tokenEl.className = `battlemap-token posture-${posture}`;
                     tokenEl.dataset.tokenType = 'pj';
                     tokenEl.dataset.tokenId = hero.playerIndex;
-                    tokenEl.title = `${hero.name} (${window.getPostureText ? window.getPostureText(posture) : ''})`;
+                    const postureStr = window.getPostureText ? window.getPostureText(posture).replace(': ', ' ') : '';
+                    tokenEl.title = postureStr ? `${hero.name} - ${postureStr}` : hero.name;
                     tokenEl.style.left = `${screenX}px`;
                     tokenEl.style.top = `${screenY}px`;
 
@@ -420,13 +421,14 @@
                 const heroPos = heroPositions.get(pIdx);
                 if (!heroPos || advList.length === 0) return;
 
+                const isInline = container.classList.contains('inline-battlemap');
                 const heroScreenX = heroPos.x * scaleX;
                 const heroScreenY = heroPos.y * scaleY;
-                const advCenterY = heroScreenY + 47;
+                const advCenterY = heroScreenY + (isInline ? 37.6 : 47);
 
                 const count = advList.length;
-                const advWidth = 40;
-                const gap = 5;
+                const advWidth = isInline ? 32 : 40;
+                const gap = isInline ? 4 : 5;
                 const pitch = advWidth + gap;
                 const totalGroupWidth = count * advWidth + (count - 1) * gap;
                 const startCenterX = heroScreenX - (totalGroupWidth / 2) + (advWidth / 2);
@@ -438,6 +440,50 @@
             });
         });
     }
+
+    /**
+     * Switches/displays the corresponding tab for a hero or creature token
+     * @param {string} type 'pj'|'hero' or 'adversary'|'creature'
+     * @param {number|string} id playerIndex or instanceId
+     */
+    function showTabForToken(type, id) {
+        const numericId = parseInt(id);
+        if (isNaN(numericId)) return;
+
+        const fighterView = document.getElementById('fighterView');
+        const isFighterViewVisible = fighterView && fighterView.style.display !== 'none';
+
+        if (type === 'pj' || type === 'hero') {
+            if (isFighterViewVisible) {
+                const fighterTab = document.querySelector(`.fighter-tab[data-type="hero"][data-player-index="${numericId}"]`);
+                if (fighterTab) {
+                    fighterTab.click();
+                    return;
+                }
+            }
+
+            // Stage 1 (Engagement View) or fallback
+            const playerTab = document.querySelector(`.player-tab[data-player-index="${numericId}"]`);
+            if (playerTab) {
+                playerTab.click();
+            }
+        } else if (type === 'adversary' || type === 'creature') {
+            if (isFighterViewVisible) {
+                const fighterTab = document.querySelector(`.fighter-tab[data-type="creature"][data-instance-id="${numericId}"]`);
+                if (fighterTab) {
+                    fighterTab.click();
+                    return;
+                }
+            }
+
+            // Stage 1 (Engagement View) or fallback
+            const creatureTab = document.querySelector(`.creature-tab[data-instance-id="${numericId}"]`);
+            if (creatureTab) {
+                creatureTab.click();
+            }
+        }
+    }
+    window.showTabForToken = showTabForToken;
 
     /**
      * Renders a single adversary token on the battlemap overlay
@@ -454,11 +500,17 @@
         tokenEl.title = adv.name + (adv.isSecondary ? ' (Dupliqué)' : '');
         tokenEl.style.left = `${screenX}px`;
         tokenEl.style.top = `${screenY}px`;
+        tokenEl.style.cursor = 'pointer';
 
         const nameSpan = document.createElement('span');
         nameSpan.className = 'adversary-token-name';
         nameSpan.textContent = adv.name;
         tokenEl.appendChild(nameSpan);
+
+        tokenEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showTabForToken('adversary', adv.instanceId);
+        });
 
         overlay.appendChild(tokenEl);
     }
@@ -471,6 +523,7 @@
         let activePointerId = null;
         let startX = 0, startY = 0;
         let tokenStartX = initialScreenX, tokenStartY = initialScreenY;
+        let hasMoved = false;
 
         tokenEl.style.touchAction = 'none';
         tokenEl.addEventListener('dragstart', (e) => e.preventDefault());
@@ -482,6 +535,7 @@
             isDragging = true;
             isTokenDragging = true;
             activePointerId = e.pointerId;
+            hasMoved = false;
 
             try {
                 tokenEl.setPointerCapture(e.pointerId);
@@ -509,6 +563,10 @@
 
             const deltaX = e.clientX - startX;
             const deltaY = e.clientY - startY;
+
+            if (Math.hypot(deltaX, deltaY) > 5) {
+                hasMoved = true;
+            }
 
             let currentX = tokenStartX + deltaX;
             let currentY = tokenStartY + deltaY;
@@ -538,7 +596,8 @@
                 tokenEl.className = `battlemap-token posture-${newPosture}`;
                 const heroWrapper = document.querySelector(`.player-wrapper[data-player-index="${id}"]`);
                 const heroName = heroWrapper ? heroWrapper.dataset.playerName : '';
-                tokenEl.title = `${heroName} (${window.getPostureText ? window.getPostureText(newPosture) : ''})`;
+                const postureStr = window.getPostureText ? window.getPostureText(newPosture).replace(': ', ' ') : '';
+                tokenEl.title = postureStr ? `${heroName} - ${postureStr}` : heroName;
 
                 // Update posture indicator in engagement cards immediately during drag
                 if (heroWrapper) {
@@ -550,15 +609,16 @@
 
                 // Update associated adversary tokens on this overlay during hero token drag
                 if (overlay) {
+                    const isInline = container.classList.contains('inline-battlemap');
                     const advTokens = overlay.querySelectorAll(`.adversary-token[data-hero-id="${id}"]`);
                     if (advTokens.length > 0) {
                         const count = advTokens.length;
-                        const advWidth = 40;
-                        const gap = 5;
+                        const advWidth = isInline ? 32 : 40;
+                        const gap = isInline ? 4 : 5;
                         const pitch = advWidth + gap;
                         const totalGroupWidth = count * advWidth + (count - 1) * gap;
                         const startCenterX = currentX - (totalGroupWidth / 2) + (advWidth / 2);
-                        const advCenterY = currentY + 47;
+                        const advCenterY = currentY + (isInline ? 37.6 : 47);
 
                         advTokens.forEach((advToken, idx) => {
                             advToken.style.left = `${startCenterX + idx * pitch}px`;
@@ -593,6 +653,11 @@
 
             activePointerId = null;
             tokenEl.style.transition = '';
+
+            if (!hasMoved) {
+                showTabForToken(type, id);
+                return;
+            }
 
             if (!img || img.clientWidth === 0 || img.clientHeight === 0) return;
 

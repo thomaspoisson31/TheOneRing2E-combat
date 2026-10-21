@@ -323,7 +323,7 @@
     border-radius: 4px;
     object-fit: cover;
     flex-shrink: 0;
-    transform: perspective(300px) rotateX(10deg);
+    transform: perspective(300px) rotateX(25deg);
     transform-style: preserve-3d;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
@@ -374,7 +374,7 @@
     border-radius: 4px;
     object-fit: cover;
     flex-shrink: 0;
-    transform: perspective(300px) rotateX(10deg);
+    transform: perspective(300px) rotateX(25deg);
     transform-style: preserve-3d;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
