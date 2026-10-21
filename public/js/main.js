@@ -136,6 +136,7 @@ window.addEventListener('DOMContentLoaded', function () {
         .then(str => {
             const parser = new DOMParser();
             pjDocumentDoc = parser.parseFromString(str, "text/xml");
+            window.pjDocumentDoc = pjDocumentDoc;
             createPlayerTabs(pjDocumentDoc);
         })
         .catch(error => {
@@ -406,6 +407,9 @@ function switchTab(tabType, fighterData = null) {
         if (engagementView) engagementView.style.display = 'block';
         if (fighterView) fighterView.style.display = 'none';
     } else if (tabType === 'fighter' && fighterData) {
+        if (typeof prepareCardContainerForStage2 === 'function') {
+            prepareCardContainerForStage2();
+        }
         if (engagementTab) engagementTab.classList.remove('active');
         if (engagementView) engagementView.style.display = 'none';
         if (fighterView) fighterView.style.display = 'block';
@@ -416,6 +420,9 @@ function switchTab(tabType, fighterData = null) {
 window.switchTab = switchTab;
 
 function selectFighterTab(fighter) {
+    if (typeof prepareCardContainerForStage2 === 'function') {
+        prepareCardContainerForStage2();
+    }
     if (typeof saveCurrentCardInputs === 'function') {
         saveCurrentCardInputs();
     }

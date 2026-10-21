@@ -11,6 +11,9 @@ let heroRepousseStates = window.heroRepousseStates || new Map();
 window.heroRepousseStates = heroRepousseStates;
 
 function displayPlayerProfile(player) {
+    if (typeof prepareCardContainerForStage1 === 'function') {
+        prepareCardContainerForStage1();
+    }
     const name = player.getElementsByTagName('Name')[0].textContent;
     const endurance = player.getElementsByTagName('Endurance')[0].textContent;
     const hope = player.getElementsByTagName('Hope')[0].textContent;
@@ -62,7 +65,11 @@ function displayPlayerProfile(player) {
         default: postureClass = 'posture-expose'; break;
     }
 
+    const engagementView = document.getElementById('engagementView');
+    const isStage1 = engagementView && engagementView.style.display !== 'none';
+
     let html = `
+        ${isStage1 ? '<button class="card-delete-btn" onclick="closeStage1Card()" title="Fermer">×</button>' : ''}
         <div class="creature-header">
             <div class="creature-title">
                 <div class="creature-title-left">

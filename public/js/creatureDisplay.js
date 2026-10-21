@@ -290,6 +290,9 @@ function getFamilyCapacities(familyName) {
 }
 
 function displayCreatureDetails(creature, familyName, instanceId = null) {
+    if (typeof prepareCardContainerForStage1 === 'function') {
+        prepareCardContainerForStage1();
+    }
     if (typeof saveCurrentCardInputs === 'function') {
         saveCurrentCardInputs();
     }
@@ -328,7 +331,11 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
     if (currentAdvantage === 1 || currentAdvantage === 2) advantageClass = 'positive';
     else if (currentAdvantage === -1 || currentAdvantage === -2) advantageClass = 'negative';
 
+    const engagementView = document.getElementById('engagementView');
+    const isStage1 = engagementView && engagementView.style.display !== 'none';
+
     let html = `
+        ${isStage1 ? '<button class="card-delete-btn" onclick="closeStage1Card()" title="Fermer">×</button>' : ''}
         <div class="creature-header">
             <div class="creature-title">
                 <div class="creature-title-left">

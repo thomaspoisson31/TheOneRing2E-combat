@@ -450,36 +450,61 @@
         const numericId = parseInt(id);
         if (isNaN(numericId)) return;
 
+        if (typeof window.saveCurrentCardInputs === 'function') {
+            window.saveCurrentCardInputs();
+        }
+
         const fighterView = document.getElementById('fighterView');
         const isFighterViewVisible = fighterView && fighterView.style.display !== 'none';
 
-        if (type === 'pj' || type === 'hero') {
-            if (isFighterViewVisible) {
+        if (isFighterViewVisible) {
+            if (type === 'pj' || type === 'hero') {
                 const fighterTab = document.querySelector(`.fighter-tab[data-type="hero"][data-player-index="${numericId}"]`);
                 if (fighterTab) {
                     fighterTab.click();
                     return;
                 }
-            }
-
-            // Stage 1 (Engagement View) or fallback
-            const playerTab = document.querySelector(`.player-tab[data-player-index="${numericId}"]`);
-            if (playerTab) {
-                playerTab.click();
-            }
-        } else if (type === 'adversary' || type === 'creature') {
-            if (isFighterViewVisible) {
+            } else if (type === 'adversary' || type === 'creature') {
                 const fighterTab = document.querySelector(`.fighter-tab[data-type="creature"][data-instance-id="${numericId}"]`);
                 if (fighterTab) {
                     fighterTab.click();
                     return;
                 }
             }
+        }
 
-            // Stage 1 (Engagement View) or fallback
+        // Stage 1 (Engagement View)
+        if (type === 'pj' || type === 'hero') {
+            document.querySelectorAll('.player-tab, .creature-tab').forEach(tab => tab.classList.remove('active'));
+            const playerTab = document.querySelector(`.player-tab[data-player-index="${numericId}"]`);
+            if (playerTab) {
+                playerTab.classList.add('active');
+            }
+
+            let playerInst = window.playerInstances ? window.playerInstances.get(numericId) : null;
+            if (!playerInst && window.pjDocumentDoc) {
+                const players = window.pjDocumentDoc.getElementsByTagName('Player_Character');
+                if (players[numericId]) {
+                    playerInst = players[numericId].cloneNode(true);
+                    window.playerInstances.set(numericId, playerInst);
+                }
+            }
+
+            if (playerInst && typeof window.displayPlayerProfile === 'function') {
+                window.displayPlayerProfile(playerInst);
+            }
+        } else if (type === 'adversary' || type === 'creature') {
+            document.querySelectorAll('.player-tab, .creature-tab').forEach(tab => tab.classList.remove('active'));
             const creatureTab = document.querySelector(`.creature-tab[data-instance-id="${numericId}"]`);
+            let familyName = creatureTab ? creatureTab.dataset.familyName : '';
+
             if (creatureTab) {
-                creatureTab.click();
+                creatureTab.classList.add('active');
+            }
+
+            let creatureInst = window.creatureInstances ? window.creatureInstances.get(numericId) : null;
+            if (creatureInst && typeof window.displayCreatureDetails === 'function') {
+                window.displayCreatureDetails(creatureInst, familyName, numericId);
             }
         }
     }
