@@ -470,11 +470,11 @@
                 const isInline = container.classList.contains('inline-battlemap');
                 const heroScreenX = heroPos.x * scaleX;
                 const heroScreenY = heroPos.y * scaleY;
-                const advCenterY = heroScreenY + (isInline ? 37.6 : 47);
+                const advCenterY = heroScreenY - (isInline ? 30.08 : 47);
 
                 const count = advList.length;
-                const advWidth = isInline ? 32 : 40;
-                const gap = isInline ? 4 : 5;
+                const advWidth = isInline ? 25.6 : 40;
+                const gap = isInline ? 3.2 : 5;
                 const pitch = advWidth + gap;
                 const totalGroupWidth = count * advWidth + (count - 1) * gap;
                 const startCenterX = heroScreenX - (totalGroupWidth / 2) + (advWidth / 2);
@@ -684,12 +684,12 @@
                     const advTokens = overlay.querySelectorAll(`.adversary-token[data-hero-id="${id}"]`);
                     if (advTokens.length > 0) {
                         const count = advTokens.length;
-                        const advWidth = isInline ? 32 : 40;
-                        const gap = isInline ? 4 : 5;
+                        const advWidth = isInline ? 25.6 : 40;
+                        const gap = isInline ? 3.2 : 5;
                         const pitch = advWidth + gap;
                         const totalGroupWidth = count * advWidth + (count - 1) * gap;
                         const startCenterX = currentX - (totalGroupWidth / 2) + (advWidth / 2);
-                        const advCenterY = currentY + (isInline ? 37.6 : 47);
+                        const advCenterY = currentY - (isInline ? 30.08 : 47);
 
                         advTokens.forEach((advToken, idx) => {
                             advToken.style.left = `${startCenterX + idx * pitch}px`;
