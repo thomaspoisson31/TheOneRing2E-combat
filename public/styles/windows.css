@@ -383,22 +383,22 @@
     padding: 0 2px;
 }
 
-/* Redimensionnement des tokens dans la battlemap intégrée à la zone centrale (20% plus petits) */
+/* Redimensionnement des tokens dans la battlemap intégrée à la zone centrale (80% de la taille précédente) */
 .inline-battlemap .battlemap-token {
-    width: 35.2px;
-    height: 35.2px;
+    width: 28.16px;
+    height: 28.16px;
 }
 
 .inline-battlemap .battlemap-token span {
-    font-size: 13px;
+    font-size: 10px;
 }
 
 .inline-battlemap .battlemap-token.adversary-token {
-    width: 32px;
-    height: 32px;
+    width: 25.6px;
+    height: 25.6px;
 }
 
 .inline-battlemap .battlemap-token .adversary-token-name {
-    font-size: 8px;
-    max-height: 28px;
+    font-size: 6.5px;
+    max-height: 22px;
 }
