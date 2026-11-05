@@ -795,6 +795,40 @@
     }
 
     window.updateBattlemapTokens = updateBattlemapTokens;
+    // Battlemap image switching (images "LAU-Stance-Mat*" in images/, alphabetical order)
+    let battlemapImages = null;
+    let battlemapImageIndex = 0;
+
+    async function loadBattlemapImages() {
+        if (battlemapImages) return battlemapImages;
+        let list = [];
+        try {
+            const res = await fetch('images/battlemaps.json', { cache: 'no-cache' });
+            if (res.ok) list = await res.json();
+        } catch (err) {
+            // Fallback below
+        }
+        list = (Array.isArray(list) ? list : [])
+            .filter(f => typeof f === 'string' && f.startsWith('LAU-Stance-Mat'))
+            .sort((a, b) => a.localeCompare(b));
+        if (list.length === 0) list = ['LAU-Stance-Mat-Grass.jpg'];
+        battlemapImages = list;
+
+        const currentName = decodeURIComponent((document.querySelector('.battlemap-image')?.getAttribute('src') || '').split('/').pop());
+        const idx = list.indexOf(currentName);
+        battlemapImageIndex = idx >= 0 ? idx : 0;
+        return list;
+    }
+
+    async function switchBattlemapImage() {
+        const list = await loadBattlemapImages();
+        battlemapImageIndex = (battlemapImageIndex + 1) % list.length;
+        const src = `images/${encodeURIComponent(list[battlemapImageIndex])}`;
+        document.querySelectorAll('.battlemap-image').forEach(img => {
+            img.src = src;
+        });
+    }
+    window.switchBattlemapImage = switchBattlemapImage;
 
     window.addEventListener('DOMContentLoaded', initBattlemapWindow);
 })();
