@@ -412,3 +412,6 @@
     font-size: 6.5px;
     max-height: 22px;
 }
+/* Token adversaire : nom tronqué, numéro toujours visible */
+.battlemap-token .adversary-token-name.numbered-name.has-num .name-base { -webkit-line-clamp: 1; }
+.battlemap-token .adversary-token-name.numbered-name { max-height: none; }

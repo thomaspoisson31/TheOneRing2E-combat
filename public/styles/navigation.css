@@ -983,3 +983,46 @@
         display: none !important;
     }
 }
+
+/* ===== Zone sous la battlemap : non engagés (1ère ligne) > adversaires engagés > héros ===== */
+#creatureTabs > .creature-tab { order: 0; }
+#creatureTabs > .combat-section {
+    order: 1;
+    flex: 0 0 100%;
+    align-items: flex-start;
+}
+.player-wrapper > .pj-opponents {
+    order: 0;
+    flex-grow: 1;
+    justify-content: flex-end;
+    min-height: 0;
+}
+.player-wrapper > .player-tab { order: 1; }
+.player-wrapper > .advantage-indicator { order: 2; }
+
+/* Noms numérotés : le nom est tronqué, jamais le numéro */
+.numbered-name {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    max-width: 100%;
+    -webkit-line-clamp: unset !important;
+}
+.numbered-name .name-base {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    max-width: 100%;
+    min-height: 0;
+    text-overflow: ellipsis;
+    word-break: break-word;
+}
+.numbered-name.has-num .name-base { -webkit-line-clamp: 2; }
+.numbered-name .name-num {
+    flex-shrink: 0;
+    font-weight: 800;
+    line-height: 1.1;
+}

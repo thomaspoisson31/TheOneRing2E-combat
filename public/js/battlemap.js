@@ -635,7 +635,7 @@
         tokenEl.dataset.tokenType = 'adversary';
         tokenEl.dataset.tokenId = adv.instanceId;
         tokenEl.dataset.heroIds = adv.heroIndices.join(',');
-        tokenEl.title = adv.name;
+        tokenEl.title = typeof window.getCreatureDisplayName === 'function' ? window.getCreatureDisplayName(adv.instanceId) : adv.name;
         tokenEl.style.left = `${screenX}px`;
         tokenEl.style.top = `${screenY}px`;
         tokenEl.style.cursor = 'pointer';
@@ -647,7 +647,12 @@
 
         const nameSpan = document.createElement('span');
         nameSpan.className = 'adversary-token-name';
-        nameSpan.textContent = adv.name;
+        if (typeof window.fillCreatureNameElement === 'function') {
+            window.fillCreatureNameElement(nameSpan, adv.instanceId);
+            nameSpan.removeAttribute('title');
+        } else {
+            nameSpan.textContent = adv.name;
+        }
         tokenEl.appendChild(nameSpan);
 
         makeTokenDraggable(tokenEl, 'adversary', adv.instanceId, screenX, screenY, container, img, overlay);

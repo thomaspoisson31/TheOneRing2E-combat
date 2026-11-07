@@ -374,7 +374,11 @@ function buildFighterTabs(orderedFighters) {
 
             const nameSpan = document.createElement('span');
             nameSpan.className = 'fighter-tab-name';
-            nameSpan.textContent = fighter.name || `Créature ${fighter.instanceId}`;
+            if (window.creatureInstances && window.creatureInstances.has(fighter.instanceId) && typeof window.fillCreatureNameElement === 'function') {
+                window.fillCreatureNameElement(nameSpan, fighter.instanceId);
+            } else {
+                nameSpan.textContent = fighter.name || `Créature ${fighter.instanceId}`;
+            }
             tabBtn.appendChild(nameSpan);
         }
 
@@ -586,7 +590,7 @@ window.checkTabScrollArrows = checkTabScrollArrows;
 function createPlayerTabs(pjDoc) {
     const players = pjDoc.getElementsByTagName('Player_Character');
     const tabsContainer = document.getElementById('creatureTabs');
-    
+
     // Créer un conteneur principal incluant les colonnes de combat
     const combatSection = document.createElement('div');
     combatSection.className = 'combat-section';
@@ -599,7 +603,7 @@ function createPlayerTabs(pjDoc) {
     // --- LOGIQUE DRAG & DROP DU CONTENEUR ---
     playerTabsContainer.addEventListener('dragover', (e) => {
         e.preventDefault();
-        
+
         const draggingItem = playerTabsContainer.querySelector('.dragging');
         if (!draggingItem) return;
 
@@ -617,12 +621,12 @@ function createPlayerTabs(pjDoc) {
         }
     });
     // ----------------------------------------
-    
+
     Array.from(players).forEach((player, index) => {
         const name = player.getElementsByTagName('Name')[0]?.textContent;
         const tokenName = player.getElementsByTagName('token')[0]?.textContent;
         const wits = player.getElementsByTagName('WITS')[0]?.textContent || '0';
-        
+
         if (name) {
             const wrapper = document.createElement('div');
             wrapper.className = 'player-wrapper';
@@ -681,11 +685,11 @@ function createPlayerTabs(pjDoc) {
             opponentsContainer.className = 'pj-opponents';
 
 
-            tabElement.addEventListener('click', function() {
+            tabElement.addEventListener('click', function () {
                 if (typeof creatureSelect !== 'undefined' && creatureSelect) {
                     creatureSelect.value = '';
                 }
-                document.querySelectorAll('.player-tab, .creature-tab').forEach(tab => 
+                document.querySelectorAll('.player-tab, .creature-tab').forEach(tab =>
                     tab.classList.remove('active')
                 );
                 this.classList.add('active');
@@ -696,11 +700,11 @@ function createPlayerTabs(pjDoc) {
                 }
                 displayPlayerProfile(playerInstance);
             });
-            
+
             wrapper.appendChild(tabElement);
             wrapper.appendChild(advantageIndicator);
             wrapper.appendChild(opponentsContainer);
-            
+
             playerTabsContainer.appendChild(wrapper);
         }
     });
@@ -710,7 +714,7 @@ function createPlayerTabs(pjDoc) {
     } else {
         tabsContainer.appendChild(combatSection);
     }
-    
+
 }
 
 function getUnassignedCreatureTabs() {

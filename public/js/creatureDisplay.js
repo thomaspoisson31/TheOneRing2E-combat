@@ -8,6 +8,78 @@ window.creatureInstanceAdvantages = creatureInstanceAdvantages;
 window.dragPlaceholder = document.createElement('div');
 window.dragPlaceholder.className = 'drop-placeholder';
 
+// Numérotation des adversaires de même nom ("Larron 1", "Larron 2"...)
+let creatureNumbers = window.creatureNumbers || new Map(); // instanceId -> numéro persistant
+window.creatureNumbers = creatureNumbers;
+
+function getCreatureBaseName(instanceId) {
+    const inst = creatureInstances.get(instanceId);
+    return inst?.getElementsByTagName('nom')[0]?.textContent || `Créature ${instanceId}`;
+}
+window.getCreatureBaseName = getCreatureBaseName;
+
+function assignCreatureNumber(instanceId) {
+    const base = getCreatureBaseName(instanceId);
+    let max = 0;
+    creatureInstances.forEach((_, id) => {
+        if (id !== instanceId && getCreatureBaseName(id) === base) {
+            max = Math.max(max, creatureNumbers.get(id) || 1);
+        }
+    });
+    creatureNumbers.set(instanceId, max + 1);
+}
+
+/**
+ * Retourne { base, num } : num est non nul seulement s'il y a plusieurs adversaires de même nom.
+ */
+function getCreatureNameParts(instanceId) {
+    const base = getCreatureBaseName(instanceId);
+    let count = 0;
+    creatureInstances.forEach((_, id) => {
+        if (getCreatureBaseName(id) === base) count++;
+    });
+    return { base, num: count > 1 ? (creatureNumbers.get(instanceId) || 1) : null };
+}
+window.getCreatureNameParts = getCreatureNameParts;
+
+function getCreatureDisplayName(instanceId) {
+    const p = getCreatureNameParts(instanceId);
+    return p.num ? `${p.base} ${p.num}` : p.base;
+}
+window.getCreatureDisplayName = getCreatureDisplayName;
+
+/**
+ * Remplit un élément de nom : le nom est tronqué (CSS) mais le numéro reste toujours visible.
+ */
+function fillCreatureNameElement(el, instanceId) {
+    const p = getCreatureNameParts(instanceId);
+    el.textContent = '';
+    el.classList.add('numbered-name');
+    const baseSpan = document.createElement('span');
+    baseSpan.className = 'name-base';
+    baseSpan.textContent = p.base;
+    el.appendChild(baseSpan);
+    if (p.num) {
+        const numSpan = document.createElement('span');
+        numSpan.className = 'name-num';
+        numSpan.textContent = p.num;
+        el.appendChild(numSpan);
+    }
+    el.classList.toggle('has-num', !!p.num);
+    el.title = p.num ? `${p.base} ${p.num}` : p.base;
+}
+window.fillCreatureNameElement = fillCreatureNameElement;
+
+/** Rafraîchit les noms de tous les onglets adversaires (après ajout / suppression) */
+function refreshCreatureNames() {
+    document.querySelectorAll('.creature-tab').forEach(tab => {
+        const el = tab.querySelector('.creature-tab-name');
+        const id = parseInt(tab.dataset.instanceId);
+        if (el && creatureInstances.has(id)) fillCreatureNameElement(el, id);
+    });
+}
+window.refreshCreatureNames = refreshCreatureNames;
+
 function cycleInstanceAdvantage(instanceId) {
     const currentValue = creatureInstanceAdvantages.get(instanceId) || 0;
     // Cycle: 1 -> 0 -> -1 -> 2 -> 1 (+1D -> 0 -> -1D -> Distance -> +1D)
@@ -36,7 +108,7 @@ function cycleInstanceAdvantage(instanceId) {
 function displayCreature(creature, familyName, resetSelect = true, showDetails = true) {
     creatureCounter++;
     const instanceId = creatureCounter;
-    
+
     const creatureInstance = creature.cloneNode(true);
     creatureInstances.set(instanceId, creatureInstance);
 
@@ -52,21 +124,21 @@ function displayCreature(creature, familyName, resetSelect = true, showDetails =
     // Créer le conteneur pour le contenu de l'onglet
     const tabContent = document.createElement('div');
     tabContent.className = 'tab-content';
-    
+
     // Afficher le nom en petits caractères
     const name = creature.getElementsByTagName('nom')[0]?.textContent || `${instanceId}`;
-    tabContent.innerHTML = `<span class="creature-tab-name">${name}</span>`;
+    assignCreatureNumber(instanceId); const nameEl = document.createElement('span'); nameEl.className = 'creature-tab-name'; tabContent.appendChild(nameEl);
 
     tabElement.appendChild(tabContent);
-    
-    tabElement.addEventListener('click', function() {
+
+    tabElement.addEventListener('click', function () {
         // Désélectionner tous les onglets
-        document.querySelectorAll('.player-tab, .creature-tab').forEach(tab => 
+        document.querySelectorAll('.player-tab, .creature-tab').forEach(tab =>
             tab.classList.remove('active')
         );
-        
+
         this.classList.add('active');
-        
+
         const instId = parseInt(this.dataset.instanceId);
         const instance = creatureInstances.get(instId);
         if (instance) {
@@ -75,11 +147,12 @@ function displayCreature(creature, familyName, resetSelect = true, showDetails =
         }
 
     });
-    
+
     const targetContainer = document.getElementById('creatureTabs');
     if (targetContainer) {
         targetContainer.appendChild(tabElement);
     }
+    refreshCreatureNames();
     if (showDetails) {
         tabElement.click();
     }
@@ -127,7 +200,7 @@ function updateAssociatedPlayersList(instanceId) {
     if (creatureCard.style.display === 'none' || (cardInstanceId !== instanceId && !isNaN(cardInstanceId) && !isNaN(instanceId))) return;
 
     const playersSet = creaturePlayerAssociations.get(instanceId);
-    
+
     if (!playersSet || playersSet.size === 0) {
         listContainer.innerHTML = '';
         return;
@@ -211,14 +284,14 @@ function adjustCreatureStat(instanceId, field, delta) {
 function getFamilyCapacities(familyName) {
     const famille = Array.from(xmlDoc.getElementsByTagName('famille'))
         .find(f => f.getAttribute('nom') === familyName);
-    
+
     if (!famille) return [];
-    
+
     const capacites = Array.from(famille.children)
         .find(child => child.tagName === 'capacites_famille');
-    
+
     if (!capacites) return [];
-    
+
     return Array.from(capacites.getElementsByTagName('capacite'));
 }
 
@@ -301,7 +374,7 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
 
     // Stats
     html += '<div class="stats-grid">';
-    
+
     // Ligne 1: Niveau, Parade, Armure
     html += '<div class="stats-row stats-row-top">';
     html += `
@@ -310,14 +383,14 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
             <div class="stat-label">Niveau</div>
             <div class="stat-value">${niveau}</div>
         </div>`;
-    
+
     html += `
         <div class="stat-diamond">
             <img src="images/diamond.png" alt="diamond">
             <div class="stat-label">Parade</div>
             <div class="stat-value">${parade}</div>
         </div>`;
-    
+
     html += `
         <div class="stat-diamond">
             <img src="images/diamond.png" alt="diamond">
@@ -343,7 +416,7 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
             </div>
             <button class="stat-btn" onclick="adjustCreatureStat(${instanceId}, 'endurance', 1)">+</button>
         </div>`;
-    
+
     html += `
         <div class="stat-wrapper">
             <button class="stat-btn" onclick="adjustCreatureStat(${instanceId}, '${haineField}', -1)">-</button>
@@ -360,7 +433,7 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
             <button class="stat-btn" onclick="adjustCreatureStat(${instanceId}, '${haineField}', 1)">+</button>
         </div>`;
     html += '</div>';
-    
+
     html += '</div>';
 
     // Compétences et capacités
@@ -369,7 +442,7 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
     // Compétences de combat
     const competences = creature.getElementsByTagName('competences_combat')[0];
     const puissance = attributs?.getElementsByTagName('puissance')[0]?.textContent || '1';
-    
+
     const weapons = competences ? Array.from(competences.getElementsByTagName('arme')) : [];
     if (weapons.length > 0) {
         html += '<div class="combat-skills">';
@@ -379,7 +452,7 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
             html += `<span class="puissance-badge">${puissance}</span>`;
         }
         html += '</div><ul>';
-        
+
         for (let arme of weapons) {
             const nomArme = arme.getElementsByTagName('nom_arme')[0]?.textContent || '';
             const valeurArme = parseInt(arme.getElementsByTagName('valeur_arme')[0]?.textContent || '0');
@@ -408,12 +481,12 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
     // Capacités
     const creatureCapacites = creature.getElementsByTagName('capacites')[0] || creature.getElementsByTagName('capacites_redoutables')[0];
     const familyCapacites = getFamilyCapacities(familyName);
-    
+
     const creatureCapList = creatureCapacites ? Array.from(creatureCapacites.getElementsByTagName('capacite')) : [];
 
     if (creatureCapList.length > 0 || familyCapacites.length > 0) {
         html += '<div class="capacites"><h3>Capacités</h3>';
-        
+
         for (let capacite of creatureCapList) {
             const titre = capacite.getElementsByTagName('Titre_Capacite')[0]?.textContent || capacite.getAttribute('nom') || '';
             const details = capacite.getElementsByTagName('Detail_Capacite')[0]?.textContent || capacite.textContent || '';
@@ -425,7 +498,7 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
                     </div>`;
             }
         }
-        
+
         for (let capacite of familyCapacites) {
             const titre = capacite.getElementsByTagName('Titre_Capacite')[0]?.textContent || capacite.getAttribute('nom') || '';
             const details = capacite.getElementsByTagName('Detail_Capacite')[0]?.textContent || capacite.textContent || '';
@@ -437,7 +510,7 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
                     </div>`;
             }
         }
-        
+
         html += '</div>';
     }
 
@@ -446,7 +519,7 @@ function displayCreatureDetails(creature, familyName, instanceId = null) {
     creatureCard.dataset.instanceId = instanceId;
     creatureCard.innerHTML = html;
     creatureCard.style.display = 'block';
-    
+
     // Mettre à jour la liste des joueurs associés
     updateAssociatedPlayersList(instanceId);
 }
@@ -482,9 +555,9 @@ function deleteCreature(instanceId) {
     const tabElements = document.querySelectorAll(`.creature-tab[data-instance-id="${instanceId}"]`);
     tabElements.forEach(tab => tab.remove());
 
-    creatureInstances.delete(instanceId);
+    creatureInstances.delete(instanceId); creatureNumbers.delete(instanceId);
     creaturePlayerAssociations.delete(instanceId);
-    creatureCard.style.display = 'none';
+    creatureCard.style.display = 'none'; refreshCreatureNames();
 
     if (typeof updateRandomAssociationButtonVisibility === 'function') {
         updateRandomAssociationButtonVisibility();
