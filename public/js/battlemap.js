@@ -670,7 +670,7 @@
      * Updates the hero associations of an adversary token according to its proximity to heroes.
      * @param {HTMLElement} advEl adversary token element
      * @param {HTMLElement} overlay overlay containing the hero tokens
-     * @param {number|null} onlyHeroIndex when set, only checks this hero and only removes the association if far
+     * @param {number|null} onlyHeroIndex when set, only checks (adds or removes) the association with this hero
      * @returns {boolean} true if associations changed
      */
     function updateAdversaryAssociations(advEl, overlay, onlyHeroIndex = null) {
@@ -692,7 +692,7 @@
             if (!heroName) return;
 
             if (isNearHero(advEl, heroEl)) {
-                if (onlyHeroIndex === null) set.add(heroName);
+                set.add(heroName);
             } else {
                 set.delete(heroName);
             }
@@ -896,14 +896,12 @@
                     }
                 }
 
-                // Adversaries shared with other heroes stay in place: dissociate them from this hero if now too far
+                // Other adversaries stay in place: associate them with this hero if now within 5px, dissociate if too far
                 let changed = false;
                 if (overlay) {
                     overlay.querySelectorAll('.adversary-token').forEach(advEl => {
-                        const heroIds = (advEl.dataset.heroIds || '').split(',').filter(Boolean);
-                        if (heroIds.length > 1 && heroIds.includes(String(id))) {
-                            if (updateAdversaryAssociations(advEl, overlay, Number(id))) changed = true;
-                        }
+                        if (followers.some(f => f.el === advEl)) return; // deja associe uniquement a ce heros et deplace avec lui
+                        if (updateAdversaryAssociations(advEl, overlay, Number(id))) changed = true;
                     });
                 }
                 if (changed) applyAssociationChanges();
