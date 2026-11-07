@@ -296,6 +296,110 @@
     /**
      * Updates tokens on all active/visible battlemap containers
      */
+    // Random border colors shared by an adversary and its associated hero(es)
+    const GROUP_COLORS = ['#ff69b4', '#7dd3fc', '#86efac', '#fb923c', '#ef4444', '#a855f7', '#facc15'];
+    // Max edge-to-edge distance (screen px) between an adversary and a hero to be associated
+    const ASSOCIATION_DISTANCE = 5;
+    // tokenKey (pj_<index> / adv_<instanceId>) -> border color of its association group
+    const tokenGroupColors = window.tokenGroupColors || new Map();
+    window.tokenGroupColors = tokenGroupColors;
+
+    /**
+     * Assigns a border color to each group of associated tokens (connected hero/adversary sets).
+     * Colors stay stable while a group exists and are drawn randomly for new groups.
+     */
+    function updateGroupColors(playerWrappers) {
+        const parent = new Map();
+        const find = (k) => {
+            if (!parent.has(k)) parent.set(k, k);
+            let root = k;
+            while (parent.get(root) !== root) root = parent.get(root);
+            while (parent.get(k) !== root) {
+                const next = parent.get(k);
+                parent.set(k, root);
+                k = next;
+            }
+            return root;
+        };
+        const union = (a, b) => {
+            const ra = find(a), rb = find(b);
+            if (ra !== rb) parent.set(ra, rb);
+        };
+
+        const nameToIndex = new Map();
+        playerWrappers.forEach(w => nameToIndex.set(w.dataset.playerName, parseInt(w.dataset.playerIndex)));
+
+        if (window.creaturePlayerAssociations && window.creatureInstances) {
+            window.creaturePlayerAssociations.forEach((set, instanceId) => {
+                if (!window.creatureInstances.has(instanceId) || !set) return;
+                set.forEach(name => {
+                    if (nameToIndex.has(name)) {
+                        union(`adv_${instanceId}`, `pj_${nameToIndex.get(name)}`);
+                    }
+                });
+            });
+        }
+
+        const components = new Map();
+        Array.from(parent.keys()).forEach(k => {
+            const root = find(k);
+            if (!components.has(root)) components.set(root, []);
+            components.get(root).push(k);
+        });
+
+        const previous = new Map(tokenGroupColors);
+        tokenGroupColors.clear();
+        const used = new Set();
+
+        components.forEach(members => {
+            let color = null;
+            for (const m of members) {
+                const c = previous.get(m);
+                if (c && !used.has(c)) { color = c; break; }
+            }
+            if (!color) {
+                const free = GROUP_COLORS.filter(c => !used.has(c));
+                const pool = free.length > 0 ? free : GROUP_COLORS;
+                color = pool[Math.floor(Math.random() * pool.length)];
+            }
+            used.add(color);
+            members.forEach(m => tokenGroupColors.set(m, color));
+        });
+    }
+
+    /**
+     * Computes the initial hero layout (by posture arcs) once: heroes that already have a
+     * position keep it, tokens are never automatically reorganized afterwards.
+     */
+    function ensureHeroPositions(postureGroups) {
+        Object.keys(postureGroups).forEach((postureKey) => {
+            const posture = parseInt(postureKey);
+            const heroes = postureGroups[posture].filter(h => !customTokenPositions.has(`pj_${h.playerIndex}`));
+            const count = heroes.length;
+            if (count === 0) return;
+
+            const center = POSTURE_CENTERS[posture] || { x: 2048, y: 1600 };
+            const arc = ARC_SETTINGS[posture] || { radiusX: 500, radiusY: 200, startAngle: -150, endAngle: -30 };
+
+            heroes.forEach((hero, index) => {
+                let origX, origY;
+                if (count === 1) {
+                    origX = center.x;
+                    origY = center.y;
+                } else {
+                    const angleDeg = arc.startAngle + (index / (count - 1)) * (arc.endAngle - arc.startAngle);
+                    const angleRad = (angleDeg * Math.PI) / 180;
+                    origX = center.x + arc.radiusX * Math.cos(angleRad);
+                    origY = center.y + arc.radiusY * Math.sin(angleRad);
+                }
+                customTokenPositions.set(`pj_${hero.playerIndex}`, { x: origX, y: origY });
+            });
+        });
+    }
+
+    /**
+     * Updates tokens on all active/visible battlemap containers
+     */
     function updateBattlemapTokens() {
         const containers = document.querySelectorAll('.battlemap-container');
         if (containers.length === 0) return;
@@ -303,7 +407,6 @@
         // Collect player wrappers and posture groups
         const playerWrappers = Array.from(document.querySelectorAll('.player-wrapper'));
         const postureGroups = { 0: [], 1: [], 2: [], 3: [] };
-        const heroNamesMap = new Map();
 
         playerWrappers.forEach((wrapper) => {
             const playerIndex = parseInt(wrapper.dataset.playerIndex);
@@ -313,92 +416,50 @@
                 ? window.playerAdvantages.get(playerIndex)
                 : 0;
 
-            heroNamesMap.set(playerName, playerIndex);
-
-            if (postureGroups[posture] !== undefined) {
-                postureGroups[posture].push({
-                    playerIndex,
-                    name: playerName,
-                    token: tokenName
-                });
-            } else {
-                postureGroups[0].push({
-                    playerIndex,
-                    name: playerName,
-                    token: tokenName
-                });
-            }
+            const target = postureGroups[posture] !== undefined ? postureGroups[posture] : postureGroups[0];
+            target.push({ playerIndex, name: playerName, token: tokenName, posture: postureGroups[posture] !== undefined ? posture : 0 });
         });
 
-        // Compute original 4096x3385 positions for all heroes
-        const heroPositions = new Map();
-        Object.keys(postureGroups).forEach((postureKey) => {
-            const posture = parseInt(postureKey);
-            const heroes = postureGroups[posture];
-            const count = heroes.length;
-            if (count === 0) return;
+        // Initial layout of the heroes (only for heroes without a position yet)
+        ensureHeroPositions(postureGroups);
 
-            const center = POSTURE_CENTERS[posture] || { x: 2048, y: 1600 };
-            const arc = ARC_SETTINGS[posture] || { radiusX: 500, radiusY: 200, startAngle: -150, endAngle: -30 };
-
-            heroes.forEach((hero, index) => {
-                let origX, origY;
-
-                if (customTokenPositions.has(`pj_${hero.playerIndex}`)) {
-                    const customPos = customTokenPositions.get(`pj_${hero.playerIndex}`);
-                    origX = customPos.x;
-                    origY = customPos.y;
-                } else if (count === 1) {
-                    origX = center.x;
-                    origY = center.y;
-                } else {
-                    const angleDeg = arc.startAngle + (index / (count - 1)) * (arc.endAngle - arc.startAngle);
-                    const angleRad = (angleDeg * Math.PI) / 180;
-                    origX = center.x + arc.radiusX * Math.cos(angleRad);
-                    origY = center.y + arc.radiusY * Math.sin(angleRad);
-                }
-
-                heroPositions.set(hero.playerIndex, { x: origX, y: origY });
-            });
-        });
-
-        // Collect engaged adversaries per hero
-        const heroAdversariesMap = new Map();
-        playerWrappers.forEach(wrapper => {
-            const pIdx = parseInt(wrapper.dataset.playerIndex);
-            heroAdversariesMap.set(pIdx, []);
-        });
-
+        // Collect adversaries and their associated heroes
+        const advInfos = [];
         if (window.creatureInstances) {
             window.creatureInstances.forEach((creatureInst, instanceId) => {
                 const name = creatureInst.getElementsByTagName('nom')[0]?.textContent || `Créature ${instanceId}`;
                 const associatedSet = window.creaturePlayerAssociations ? window.creaturePlayerAssociations.get(instanceId) : null;
-                if (!associatedSet || associatedSet.size === 0) return;
-
-                const engagedHeroIndices = [];
+                const heroIndices = [];
                 playerWrappers.forEach(wrapper => {
-                    const pIdx = parseInt(wrapper.dataset.playerIndex);
-                    const playerName = wrapper.dataset.playerName;
-                    if (associatedSet.has(playerName) && heroPositions.has(pIdx)) {
-                        engagedHeroIndices.push(pIdx);
+                    if (associatedSet && associatedSet.has(wrapper.dataset.playerName)) {
+                        heroIndices.push(parseInt(wrapper.dataset.playerIndex));
                     }
                 });
-
-                if (engagedHeroIndices.length > 0) {
-                    engagedHeroIndices.forEach((pIdx, idx) => {
-                        const isSecondary = idx > 0;
-                        const advList = heroAdversariesMap.get(pIdx);
-                        if (advList) {
-                            advList.push({
-                                instanceId,
-                                name,
-                                isSecondary
-                            });
-                        }
-                    });
-                }
+                advInfos.push({ instanceId, name, heroIndices });
             });
         }
+
+        // Associated adversaries without any position yet: placed once above their first hero
+        const fallbackCount = new Map();
+        advInfos.forEach(adv => {
+            const key = `adv_${adv.instanceId}`;
+            if (adv.heroIndices.length > 0 && !customTokenPositions.has(key)) {
+                const heroPos = customTokenPositions.get(`pj_${adv.heroIndices[0]}`);
+                if (!heroPos) return;
+                const n = fallbackCount.get(adv.heroIndices[0]) || 0;
+                fallbackCount.set(adv.heroIndices[0], n + 1);
+                customTokenPositions.set(key, {
+                    x: Math.max(0, Math.min(ORIGINAL_WIDTH, heroPos.x + n * 250)),
+                    y: Math.max(0, heroPos.y - 280)
+                });
+            }
+        });
+
+        // Adversaries never placed and not associated: displayed in a single row at the top
+        const topRowAdversaries = advInfos.filter(adv =>
+            adv.heroIndices.length === 0 && !customTokenPositions.has(`adv_${adv.instanceId}`));
+
+        updateGroupColors(playerWrappers);
 
         // Render on every visible battlemap container
         containers.forEach(container => {
@@ -423,27 +484,32 @@
 
             const scaleX = renderedWidth / ORIGINAL_WIDTH;
             const scaleY = renderedHeight / ORIGINAL_HEIGHT;
+            const isInline = container.classList.contains('inline-battlemap');
 
             // Render Hero Tokens
             Object.keys(postureGroups).forEach((postureKey) => {
                 const posture = parseInt(postureKey);
-                const heroes = postureGroups[posture];
 
-                heroes.forEach((hero) => {
-                    const heroPos = heroPositions.get(hero.playerIndex);
+                postureGroups[posture].forEach((hero) => {
+                    const heroPos = customTokenPositions.get(`pj_${hero.playerIndex}`);
                     if (!heroPos) return;
 
                     const screenX = heroPos.x * scaleX;
                     const screenY = heroPos.y * scaleY;
 
                     const tokenEl = document.createElement('div');
-                    tokenEl.className = `battlemap-token posture-${posture}`;
+                    tokenEl.className = 'battlemap-token';
                     tokenEl.dataset.tokenType = 'pj';
                     tokenEl.dataset.tokenId = hero.playerIndex;
                     const postureStr = window.getPostureText ? window.getPostureText(posture).replace(': ', ' ') : '';
                     tokenEl.title = postureStr ? `${hero.name} - ${postureStr}` : hero.name;
                     tokenEl.style.left = `${screenX}px`;
                     tokenEl.style.top = `${screenY}px`;
+
+                    const groupColor = tokenGroupColors.get(`pj_${hero.playerIndex}`);
+                    if (groupColor) {
+                        tokenEl.style.border = `3px solid ${groupColor}`;
+                    }
 
                     if (hero.token) {
                         const imgEl = document.createElement('img');
@@ -463,26 +529,29 @@
             });
 
             // Render Adversary Tokens
-            heroAdversariesMap.forEach((advList, pIdx) => {
-                const heroPos = heroPositions.get(pIdx);
-                if (!heroPos || advList.length === 0) return;
+            const advWidth = isInline ? 25.6 : 40;
+            const gap = isInline ? 3.2 : 5;
+            const topCount = topRowAdversaries.length;
+            let topPitch = advWidth + gap;
+            if (topCount > 1) {
+                topPitch = Math.min(topPitch, (renderedWidth - advWidth) / (topCount - 1));
+            }
+            const topStartX = renderedWidth / 2 - ((topCount - 1) * topPitch) / 2;
+            const topY = advWidth / 2 + 6;
 
-                const isInline = container.classList.contains('inline-battlemap');
-                const heroScreenX = heroPos.x * scaleX;
-                const heroScreenY = heroPos.y * scaleY;
-                const advCenterY = heroScreenY - (isInline ? 30.08 : 47);
-
-                const count = advList.length;
-                const advWidth = isInline ? 25.6 : 40;
-                const gap = isInline ? 3.2 : 5;
-                const pitch = advWidth + gap;
-                const totalGroupWidth = count * advWidth + (count - 1) * gap;
-                const startCenterX = heroScreenX - (totalGroupWidth / 2) + (advWidth / 2);
-
-                advList.forEach((adv, idx) => {
-                    const advCenterX = startCenterX + idx * pitch;
-                    renderAdversaryToken(adv, advCenterX, advCenterY, overlay, pIdx);
-                });
+            advInfos.forEach(adv => {
+                const stored = customTokenPositions.get(`adv_${adv.instanceId}`);
+                let screenX, screenY;
+                if (stored) {
+                    screenX = stored.x * scaleX;
+                    screenY = stored.y * scaleY;
+                } else {
+                    const topIndex = topRowAdversaries.indexOf(adv);
+                    if (topIndex < 0) return;
+                    screenX = topStartX + topIndex * topPitch;
+                    screenY = topY;
+                }
+                renderAdversaryToken(adv, screenX, screenY, container, img, overlay);
             });
         });
     }
@@ -558,36 +627,98 @@
 
     /**
      * Renders a single adversary token on the battlemap overlay
+     * (one token per adversary, whatever the number of associated heroes)
      */
-    function renderAdversaryToken(adv, screenX, screenY, overlay, heroId) {
+    function renderAdversaryToken(adv, screenX, screenY, container, img, overlay) {
         const tokenEl = document.createElement('div');
         tokenEl.className = 'battlemap-token adversary-token';
-        if (adv.isSecondary) {
-            tokenEl.classList.add('secondary-token');
-        }
         tokenEl.dataset.tokenType = 'adversary';
         tokenEl.dataset.tokenId = adv.instanceId;
-        tokenEl.dataset.heroId = heroId;
-        tokenEl.title = adv.name + (adv.isSecondary ? ' (Dupliqué)' : '');
+        tokenEl.dataset.heroIds = adv.heroIndices.join(',');
+        tokenEl.title = adv.name;
         tokenEl.style.left = `${screenX}px`;
         tokenEl.style.top = `${screenY}px`;
         tokenEl.style.cursor = 'pointer';
+
+        const color = tokenGroupColors.get(`adv_${adv.instanceId}`);
+        if (color) {
+            tokenEl.style.border = `3px solid ${color}`;
+        }
 
         const nameSpan = document.createElement('span');
         nameSpan.className = 'adversary-token-name';
         nameSpan.textContent = adv.name;
         tokenEl.appendChild(nameSpan);
 
-        tokenEl.addEventListener('click', (e) => {
-            e.stopPropagation();
-            showTabForToken('adversary', adv.instanceId);
-        });
+        makeTokenDraggable(tokenEl, 'adversary', adv.instanceId, screenX, screenY, container, img, overlay);
 
         overlay.appendChild(tokenEl);
     }
 
     /**
-     * Makes a battlemap token draggable across the image coordinate space
+     * Distance test between a dragged token and a hero token (edge to edge, in screen pixels
+     * of the overlay being manipulated).
+     */
+    function isNearHero(tokenEl, heroEl) {
+        const dx = parseFloat(tokenEl.style.left) - parseFloat(heroEl.style.left);
+        const dy = parseFloat(tokenEl.style.top) - parseFloat(heroEl.style.top);
+        const radii = (tokenEl.offsetWidth + heroEl.offsetWidth) / 2;
+        return Math.hypot(dx, dy) <= radii + ASSOCIATION_DISTANCE;
+    }
+
+    /**
+     * Updates the hero associations of an adversary token according to its proximity to heroes.
+     * @param {HTMLElement} advEl adversary token element
+     * @param {HTMLElement} overlay overlay containing the hero tokens
+     * @param {number|null} onlyHeroIndex when set, only checks this hero and only removes the association if far
+     * @returns {boolean} true if associations changed
+     */
+    function updateAdversaryAssociations(advEl, overlay, onlyHeroIndex = null) {
+        const instanceId = parseInt(advEl.dataset.tokenId);
+        if (isNaN(instanceId)) return false;
+        if (!window.creaturePlayerAssociations) window.creaturePlayerAssociations = new Map();
+        let set = window.creaturePlayerAssociations.get(instanceId);
+        if (!set) {
+            set = new Set();
+            window.creaturePlayerAssociations.set(instanceId, set);
+        }
+        const before = Array.from(set).sort().join('|');
+
+        overlay.querySelectorAll('.battlemap-token[data-token-type="pj"]').forEach(heroEl => {
+            const heroIdx = parseInt(heroEl.dataset.tokenId);
+            if (onlyHeroIndex !== null && heroIdx !== onlyHeroIndex) return;
+            const wrapper = document.querySelector(`.player-wrapper[data-player-index="${heroIdx}"]`);
+            const heroName = wrapper ? wrapper.dataset.playerName : null;
+            if (!heroName) return;
+
+            if (isNearHero(advEl, heroEl)) {
+                if (onlyHeroIndex === null) set.add(heroName);
+            } else {
+                set.delete(heroName);
+            }
+        });
+
+        return before !== Array.from(set).sort().join('|');
+    }
+
+    /**
+     * Propagates association changes made in the battlemap to the rest of the UI
+     */
+    function applyAssociationChanges() {
+        if (typeof window.syncCreatureTabsWithAssociations === 'function') {
+            window.syncCreatureTabsWithAssociations();
+        }
+        const creatureCard = document.getElementById('creatureCard');
+        if (creatureCard && creatureCard.style.display !== 'none' && creatureCard.dataset.instanceId) {
+            const displayedInstanceId = parseInt(creatureCard.dataset.instanceId);
+            if (typeof window.updateAssociatedPlayersList === 'function' && !isNaN(displayedInstanceId)) {
+                window.updateAssociatedPlayersList(displayedInstanceId);
+            }
+        }
+    }
+
+    /**
+     * Makes a battlemap token (hero or adversary) draggable across the image coordinate space
      */
     function makeTokenDraggable(tokenEl, type, id, initialScreenX, initialScreenY, container, img, overlay) {
         let isDragging = false;
@@ -595,6 +726,7 @@
         let startX = 0, startY = 0;
         let tokenStartX = initialScreenX, tokenStartY = initialScreenY;
         let hasMoved = false;
+        let followers = []; // adversaries only associated to the dragged hero, moved together with it
 
         tokenEl.style.touchAction = 'none';
         tokenEl.addEventListener('dragstart', (e) => e.preventDefault());
@@ -619,6 +751,20 @@
 
             tokenStartX = parseFloat(tokenEl.style.left) || initialScreenX;
             tokenStartY = parseFloat(tokenEl.style.top) || initialScreenY;
+
+            followers = [];
+            if (type === 'pj' && overlay) {
+                overlay.querySelectorAll('.adversary-token').forEach(advEl => {
+                    if (advEl.dataset.heroIds === String(id)) {
+                        advEl.style.transition = 'none';
+                        followers.push({
+                            el: advEl,
+                            x: parseFloat(advEl.style.left) || 0,
+                            y: parseFloat(advEl.style.top) || 0
+                        });
+                    }
+                });
+            }
 
             tokenEl.style.transition = 'none';
 
@@ -664,7 +810,6 @@
                     window.playerAdvantages.set(Number(id), newPosture);
                 }
 
-                tokenEl.className = `battlemap-token posture-${newPosture}`;
                 const heroWrapper = document.querySelector(`.player-wrapper[data-player-index="${id}"]`);
                 const heroName = heroWrapper ? heroWrapper.dataset.playerName : '';
                 const postureStr = window.getPostureText ? window.getPostureText(newPosture).replace(': ', ' ') : '';
@@ -678,25 +823,13 @@
                     }
                 }
 
-                // Update associated adversary tokens on this overlay during hero token drag
-                if (overlay) {
-                    const isInline = container.classList.contains('inline-battlemap');
-                    const advTokens = overlay.querySelectorAll(`.adversary-token[data-hero-id="${id}"]`);
-                    if (advTokens.length > 0) {
-                        const count = advTokens.length;
-                        const advWidth = isInline ? 25.6 : 40;
-                        const gap = isInline ? 3.2 : 5;
-                        const pitch = advWidth + gap;
-                        const totalGroupWidth = count * advWidth + (count - 1) * gap;
-                        const startCenterX = currentX - (totalGroupWidth / 2) + (advWidth / 2);
-                        const advCenterY = currentY - (isInline ? 30.08 : 47);
-
-                        advTokens.forEach((advToken, idx) => {
-                            advToken.style.left = `${startCenterX + idx * pitch}px`;
-                            advToken.style.top = `${advCenterY}px`;
-                        });
-                    }
-                }
+                // Adversaries associated only to this hero follow it
+                const appliedDX = currentX - tokenStartX;
+                const appliedDY = currentY - tokenStartY;
+                followers.forEach(f => {
+                    f.el.style.left = `${f.x + appliedDX}px`;
+                    f.el.style.top = `${f.y + appliedDY}px`;
+                });
             }
         };
 
@@ -724,6 +857,7 @@
 
             activePointerId = null;
             tokenEl.style.transition = '';
+            followers.forEach(f => { f.el.style.transition = ''; });
 
             if (!hasMoved) {
                 showTabForToken(type, id);
@@ -732,21 +866,26 @@
 
             if (!img || img.clientWidth === 0 || img.clientHeight === 0) return;
 
-            const currentScreenX = parseFloat(tokenEl.style.left);
-            const currentScreenY = parseFloat(tokenEl.style.top);
-
             const scaleX = img.clientWidth / ORIGINAL_WIDTH;
             const scaleY = img.clientHeight / ORIGINAL_HEIGHT;
 
-            const origX = currentScreenX / scaleX;
-            const origY = currentScreenY / scaleY;
+            const toOrig = (el) => ({
+                x: parseFloat(el.style.left) / scaleX,
+                y: parseFloat(el.style.top) / scaleY
+            });
 
             if (type === 'pj') {
-                customTokenPositions.set(`pj_${id}`, { x: origX, y: origY });
-                const newPosture = getPostureFromCoords(origX, origY);
+                const origPos = toOrig(tokenEl);
+                customTokenPositions.set(`pj_${id}`, origPos);
+                const newPosture = getPostureFromCoords(origPos.x, origPos.y);
                 if (window.playerAdvantages) {
                     window.playerAdvantages.set(Number(id), newPosture);
                 }
+
+                // Persist the new positions of the adversaries that followed the hero
+                followers.forEach(f => {
+                    customTokenPositions.set(`adv_${f.el.dataset.tokenId}`, toOrig(f.el));
+                });
 
                 // Update indicator elements and card views across the app
                 const wrapper = document.querySelector(`.player-wrapper[data-player-index="${id}"]`);
@@ -756,6 +895,18 @@
                         window.updatePostureElementStyle(indicator, newPosture);
                     }
                 }
+
+                // Adversaries shared with other heroes stay in place: dissociate them from this hero if now too far
+                let changed = false;
+                if (overlay) {
+                    overlay.querySelectorAll('.adversary-token').forEach(advEl => {
+                        const heroIds = (advEl.dataset.heroIds || '').split(',').filter(Boolean);
+                        if (heroIds.length > 1 && heroIds.includes(String(id))) {
+                            if (updateAdversaryAssociations(advEl, overlay, Number(id))) changed = true;
+                        }
+                    });
+                }
+                if (changed) applyAssociationChanges();
 
                 // Update hero card view if open
                 const numericId = Number(id);
@@ -781,6 +932,13 @@
                     }
                 }
 
+                updateBattlemapTokens();
+            } else if (type === 'adversary') {
+                customTokenPositions.set(`adv_${id}`, toOrig(tokenEl));
+                if (overlay) {
+                    updateAdversaryAssociations(tokenEl, overlay);
+                }
+                applyAssociationChanges();
                 updateBattlemapTokens();
             }
         };

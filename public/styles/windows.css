@@ -357,23 +357,6 @@
     font-size: 16px;
 }
 
-/* Border colors for hero combat postures */
-.battlemap-token.posture-1 {
-    border: 3px solid #f97316; /* AVANCE (+1D) - Orange */
-}
-
-.battlemap-token.posture-0 {
-    border: 3px solid #eab308; /* EXPOSE - Yellow */
-}
-
-.battlemap-token.posture-3 {
-    border: 3px solid #22c55e; /* DEFENSIF (-1D) - Green */
-}
-
-.battlemap-token.posture-2 {
-    border: 3px solid #3b82f6; /* ARRIERE - Blue */
-}
-
 .battlemap-token.adversary-token {
     position: absolute;
     width: 40px;

@@ -104,7 +104,7 @@ class TouchDragManager {
         if (!draggable) return;
 
         // On vérifie si c'est bien une créature ou un joueur (cibles du drag & drop)
-        if (!draggable.classList.contains('creature-tab') && !draggable.classList.contains('player-wrapper')) {
+        if (!draggable.classList.contains('player-wrapper')) { // les onglets adversaires ne sont plus deplacables (associations uniquement via la battlemap)
             return;
         }
 

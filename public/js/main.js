@@ -680,91 +680,6 @@ function createPlayerTabs(pjDoc) {
             const opponentsContainer = document.createElement('div');
             opponentsContainer.className = 'pj-opponents';
 
-            opponentsContainer.addEventListener('dragover', (e) => {
-                const draggingCreature = document.querySelector('.dragging-creature');
-                if (!draggingCreature) return;
-
-                e.preventDefault();
-                e.stopPropagation();
-
-                const siblings = [...opponentsContainer.querySelectorAll('.creature-tab:not(.dragging-creature)')];
-                const nextSibling = siblings.find(sibling => {
-                    const box = sibling.getBoundingClientRect();
-                    return e.clientY <= box.top + box.height / 2;
-                });
-
-                if (window.dragPlaceholder) {
-                    if (nextSibling) {
-                        opponentsContainer.insertBefore(window.dragPlaceholder, nextSibling);
-                    } else {
-                        opponentsContainer.appendChild(window.dragPlaceholder);
-                    }
-                }
-            });
-
-            opponentsContainer.addEventListener('drop', (e) => {
-                const draggingCreature = document.querySelector('.dragging-creature');
-                if (!draggingCreature) return;
-
-                e.preventDefault();
-                e.stopPropagation();
-
-                const instanceId = parseInt(draggingCreature.dataset.instanceId);
-                const newPlayerName = wrapper.dataset.playerName;
-
-                const isEngagedElsewhere = draggingCreature.parentNode &&
-                                           draggingCreature.parentNode.classList.contains('pj-opponents') &&
-                                           draggingCreature.parentNode !== opponentsContainer;
-
-                if (isEngagedElsewhere) {
-                    const clonedTab = draggingCreature.cloneNode(true);
-                    clonedTab.classList.remove('dragging-creature');
-                    clonedTab.classList.add('secondary');
-
-                    clonedTab.addEventListener('dragstart', (ev) => {
-                        clonedTab.classList.add('dragging-creature');
-                        ev.stopPropagation();
-                        ev.dataTransfer.setData('text/plain', instanceId);
-                        ev.dataTransfer.effectAllowed = 'move';
-                    });
-                    clonedTab.addEventListener('dragend', (ev) => {
-                        clonedTab.classList.remove('dragging-creature');
-                        if (window.dragPlaceholder && window.dragPlaceholder.parentNode) {
-                            window.dragPlaceholder.parentNode.removeChild(window.dragPlaceholder);
-                        }
-                        ev.stopPropagation();
-                    });
-                    clonedTab.addEventListener('click', function(ev) {
-                        ev.stopPropagation();
-                        document.querySelectorAll('.player-tab, .creature-tab').forEach(tab =>
-                            tab.classList.remove('active')
-                        );
-                        clonedTab.classList.add('active');
-                        const creatureInstance = window.creatureInstances ? window.creatureInstances.get(instanceId) : null;
-                        if (creatureInstance && typeof displayCreatureDetails === 'function') {
-                            displayCreatureDetails(creatureInstance, clonedTab.dataset.familyName, instanceId);
-                        }
-                    });
-
-                    if (window.dragPlaceholder && window.dragPlaceholder.parentNode === opponentsContainer) {
-                        opponentsContainer.insertBefore(clonedTab, window.dragPlaceholder);
-                        window.dragPlaceholder.remove();
-                    } else {
-                        opponentsContainer.appendChild(clonedTab);
-                    }
-                } else {
-                    if (window.dragPlaceholder && window.dragPlaceholder.parentNode === opponentsContainer) {
-                        opponentsContainer.insertBefore(draggingCreature, window.dragPlaceholder);
-                        window.dragPlaceholder.remove();
-                    } else {
-                        opponentsContainer.appendChild(draggingCreature);
-                    }
-                }
-
-                if (instanceId && newPlayerName && typeof associatePlayer === 'function') {
-                    associatePlayer(instanceId, newPlayerName);
-                }
-            });
 
             tabElement.addEventListener('click', function() {
                 if (typeof creatureSelect !== 'undefined' && creatureSelect) {
@@ -796,52 +711,6 @@ function createPlayerTabs(pjDoc) {
         tabsContainer.appendChild(combatSection);
     }
     
-    tabsContainer.addEventListener('dragover', (e) => {
-        const draggingCreature = document.querySelector('.dragging-creature');
-        if (!draggingCreature) return;
-        e.preventDefault();
-    });
-
-    tabsContainer.addEventListener('drop', (e) => {
-        const draggingCreature = document.querySelector('.dragging-creature');
-        if (!draggingCreature) return;
-
-        e.preventDefault();
-        
-        if (window.dragPlaceholder && window.dragPlaceholder.parentNode) {
-            window.dragPlaceholder.remove();
-        }
-
-        const instanceId = parseInt(draggingCreature.dataset.instanceId);
-
-        const allTabs = document.querySelectorAll(`.creature-tab[data-instance-id="${instanceId}"]`);
-        allTabs.forEach(tab => {
-            if (tab !== draggingCreature) {
-                tab.remove();
-            }
-        });
-
-        draggingCreature.classList.remove('secondary');
-        tabsContainer.appendChild(draggingCreature);
-
-        if (window.creaturePlayerAssociations && window.creaturePlayerAssociations.has(instanceId)) {
-            window.creaturePlayerAssociations.get(instanceId).clear();
-        }
-
-        if (typeof updateAssociatedPlayersList === 'function') {
-            updateAssociatedPlayersList(instanceId);
-        }
-
-        if (typeof performRandomAssociation === 'function') {
-            performRandomAssociation();
-        } else {
-            updateRandomAssociationButtonVisibility();
-        }
-    });
-
-    if (typeof performRandomAssociation === 'function') {
-        performRandomAssociation();
-    }
 }
 
 function getUnassignedCreatureTabs() {
@@ -893,56 +762,68 @@ function updateRandomAssociationButtonVisibility() {
 }
 window.updateRandomAssociationButtonVisibility = updateRandomAssociationButtonVisibility;
 
+/**
+ * L'association automatique aléatoire est supprimée : les adversaires ne sont plus affectés
+ * automatiquement aux héros. Les associations se font uniquement dans la battlemap.
+ * (fonction conservée pour compatibilité : elle rafraîchit simplement l'affichage)
+ */
 function performRandomAssociation() {
-    const unassignedTabs = getUnassignedCreatureTabs();
-    let eligibleHeroes = getEligibleHeroes();
-
-    if (unassignedTabs.length === 0 || eligibleHeroes.length === 0) {
-        updateRandomAssociationButtonVisibility();
-        return;
-    }
-
-    const creaturesToAssign = [...unassignedTabs].sort(() => Math.random() - 0.5);
-
-    while (creaturesToAssign.length > 0) {
-        const heroCounts = eligibleHeroes.map(hero => ({
-            hero: hero,
-            count: hero.opponentsContainer ? hero.opponentsContainer.querySelectorAll('.creature-tab').length : 0
-        }));
-
-        const minCount = Math.min(...heroCounts.map(h => h.count));
-        const minCountHeroes = heroCounts.filter(h => h.count === minCount).map(h => h.hero);
-
-        let chosenHero = null;
-
-        if (creaturesToAssign.length >= minCountHeroes.length) {
-            chosenHero = minCountHeroes[Math.floor(Math.random() * minCountHeroes.length)];
-        } else {
-            const minEndurance = Math.min(...minCountHeroes.map(h => h.endurance));
-            const lowestEnduranceHeroes = minCountHeroes.filter(h => h.endurance === minEndurance);
-            chosenHero = lowestEnduranceHeroes[Math.floor(Math.random() * lowestEnduranceHeroes.length)];
-        }
-
-        if (chosenHero && creaturesToAssign.length > 0) {
-            const creatureTab = creaturesToAssign.shift();
-            const instanceId = parseInt(creatureTab.dataset.instanceId);
-
-            chosenHero.opponentsContainer.appendChild(creatureTab);
-
-            if (instanceId && chosenHero.name && typeof associatePlayer === 'function') {
-                associatePlayer(instanceId, chosenHero.name);
-            }
-        }
-    }
-
-    const activeTab = document.querySelector('.creature-tab.active');
-    if (activeTab && typeof updateAssociatedPlayersList === 'function') {
-        updateAssociatedPlayersList(parseInt(activeTab.dataset.instanceId));
-    }
-
     updateRandomAssociationButtonVisibility();
     if (typeof window.updateBattlemapTokens === 'function') {
         window.updateBattlemapTokens();
     }
 }
 window.performRandomAssociation = performRandomAssociation;
+
+/**
+ * Synchronise les onglets créature (zone sous la battlemap) avec les associations
+ * adversaire - héros définies dans la battlemap.
+ */
+function syncCreatureTabsWithAssociations() {
+    const tabsContainer = document.getElementById('creatureTabs');
+    if (!tabsContainer || !window.creatureInstances) return;
+
+    const wrappersByName = new Map();
+    document.querySelectorAll('.player-wrapper').forEach(w => wrappersByName.set(w.dataset.playerName, w));
+
+    window.creatureInstances.forEach((_, instanceId) => {
+        const tabs = Array.from(document.querySelectorAll(`.creature-tab[data-instance-id="${instanceId}"]`));
+        if (tabs.length === 0) return;
+
+        const base = tabs.find(t => !t.classList.contains('secondary')) || tabs[0];
+        tabs.forEach(t => { if (t !== base) t.remove(); });
+
+        const assocSet = window.creaturePlayerAssociations ? window.creaturePlayerAssociations.get(instanceId) : null;
+        const wrappers = assocSet ? Array.from(assocSet).map(n => wrappersByName.get(n)).filter(Boolean) : [];
+
+        if (wrappers.length === 0) {
+            base.classList.remove('secondary');
+            if (base.parentNode !== tabsContainer) tabsContainer.appendChild(base);
+            return;
+        }
+
+        wrappers.forEach((wrapper, idx) => {
+            const target = wrapper.querySelector('.pj-opponents');
+            if (!target) return;
+            let tab = base;
+            if (idx === 0) {
+                base.classList.remove('secondary');
+            } else {
+                tab = base.cloneNode(true);
+                tab.classList.remove('active');
+                tab.classList.add('secondary');
+                tab.addEventListener('click', function (ev) {
+                    ev.stopPropagation();
+                    document.querySelectorAll('.player-tab, .creature-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    const inst = window.creatureInstances.get(instanceId);
+                    if (inst && typeof displayCreatureDetails === 'function') {
+                        displayCreatureDetails(inst, tab.dataset.familyName, instanceId);
+                    }
+                });
+            }
+            target.appendChild(tab);
+        });
+    });
+}
+window.syncCreatureTabsWithAssociations = syncCreatureTabsWithAssociations;
